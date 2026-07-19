@@ -19,6 +19,4 @@ void modular_sub_assign(modular_ctx *ctx, uint256_t *a, const uint256_t *b);
 
 void modular_neg_assign(modular_ctx *ctx, uint256_t *a);
 
-void modular_mul_assign(modular_ctx *ctx, uint256_t *a, const uint256_t *b);
-
 #endif //BASALT_MODULAR_H

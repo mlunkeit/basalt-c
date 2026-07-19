@@ -6,6 +6,7 @@
 #define BASALT_BIGUINT256_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 typedef struct uint256_t {
     uint32_t limbs[8];
@@ -22,5 +23,13 @@ void uint256_sub_assign(uint256_t *a, const uint256_t *b);
 result_t uint256_cmp(const uint256_t *a, const uint256_t *b);
 
 void uint256_mul_raw(uint32_t result[16], const uint256_t *a, const uint256_t *b);
+
+void bigint_add_raw(uint32_t *result, const uint32_t *a, size_t len_a, const uint32_t *b, size_t len_b);
+
+void bigint_sub_raw(uint32_t *result, const uint32_t *a, size_t len_a, const uint32_t *b, size_t len_b);
+
+void bigint_mul_raw(uint32_t *result, const uint32_t *a, size_t len_a, const uint32_t *b, size_t len_b);
+
+result_t bigint_cmp_raw(const uint32_t *a, size_t len_a, const uint32_t *b, size_t len_b);
 
 #endif //BASALT_BIGUINT256_H
