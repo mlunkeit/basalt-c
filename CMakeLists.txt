@@ -14,6 +14,7 @@ add_library(basalt STATIC
 add_executable(run_tests
         test/math/bigint.c
         test/math/modular.c
+        test/crypto/secp256k1.c
         test/runner.c)
 
 target_link_libraries(run_tests PRIVATE basalt)

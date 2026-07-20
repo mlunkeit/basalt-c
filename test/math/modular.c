@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdint.h>
 #include "../../math/bigint.h"
@@ -15,9 +14,9 @@
     }
 
 // The official secp256k1 prime modulus: 2^256 - 2^32 - 977
-// In hex: FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE FFFFFFCF
+// Human-readable (Big Endian): FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE FFFFFC2F
 static const uint256_t SECP256K1_P = {{
-    0xFFFFFCF1, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+    0xFFFFFC2F, 0xFFFFFFFE, 0xFFFFFFFF, 0xFFFFFFFF,
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
 }};
 
@@ -41,8 +40,8 @@ static uint8_t test_mod_add_with_reduction() {
     modular_ctx ctx;
     modular_init(&ctx, &SECP256K1_P);
 
-    // a = p - 3
-    uint256_t a = {{0xFFFFFCF1 - 3, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+    // FIX: a = p - 3 (Mathematisch exakt in Little Endian aufbereitet)
+    uint256_t a = {{0xFFFFFC2F - 3, 0xFFFFFFFE, 0xFFFFFFFF, 0xFFFFFFFF,
                     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}};
     // b = 5
     const uint256_t b = {{5, 0, 0, 0, 0, 0, 0, 0}};
@@ -79,8 +78,9 @@ static uint8_t test_mod_sub_with_underflow() {
     uint256_t a = {{2, 0, 0, 0, 0, 0, 0, 0}};
     const uint256_t b = {{5, 0, 0, 0, 0, 0, 0, 0}};
 
-    // 2 - 5 = -3 = p - 3 (mod p)
-    uint256_t expected = {{0xFFFFFCF1 - 3, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+    // FIX: 2 - 5 = -3 = p - 3 (mod p)
+    // Erwarteter Wert muss exakt auf dem echten p basieren!
+    uint256_t expected = {{0xFFFFFC2F - 3, 0xFFFFFFFE, 0xFFFFFFFF, 0xFFFFFFFF,
                            0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}};
 
     modular_sub_assign(&ctx, &a, &b);
@@ -110,8 +110,8 @@ static uint8_t test_mod_neg_value() {
 
     uint256_t a = {{5, 0, 0, 0, 0, 0, 0, 0}};
 
-    // -5 = p - 5
-    uint256_t expected = {{0xFFFFFCF1 - 5, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+    // FIX: -5 = p - 5 (Ebenfalls auf den echten Modulus korrigiert)
+    uint256_t expected = {{0xFFFFFC2F - 5, 0xFFFFFFFE, 0xFFFFFFFF, 0xFFFFFFFF,
                            0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}};
 
     modular_neg_assign(&ctx, &a);

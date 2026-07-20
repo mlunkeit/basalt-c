@@ -108,6 +108,8 @@ void bigint_add_raw(uint32_t *result, const uint32_t *a, const size_t len_a, con
         result[i] = (uint32_t) carry;
         carry >>= 32;
     }
+
+    result[max_len] = carry;
 }
 
 void bigint_sub_raw(uint32_t *result, const uint32_t *a, const size_t len_a, const uint32_t *b, const size_t len_b) {
@@ -129,6 +131,8 @@ void bigint_sub_raw(uint32_t *result, const uint32_t *a, const size_t len_a, con
         result[i] = diff;
         borrow = (diff >> 32) & 1;
     }
+
+    result[max_len] = 0 - borrow;
 }
 
 void bigint_mul_raw(uint32_t *result, const uint32_t *a, const size_t len_a, const uint32_t *b, const size_t len_b) {
@@ -155,28 +159,21 @@ void bigint_mul_raw(uint32_t *result, const uint32_t *a, const size_t len_a, con
 }
 
 result_t bigint_cmp_raw(const uint32_t *a, const size_t len_a, const uint32_t *b, const size_t len_b) {
-    size_t max_len;
+    size_t max_len = (len_a > len_b) ? len_a : len_b;
 
-    if (len_a < len_b) {
-        max_len = len_b;
-    } else {
-        max_len = len_a;
-    }
+    for (size_t i = max_len; i > 0; i--) {
+        size_t idx = i - 1;
 
-    result_t result = 0;
+        const uint32_t limb_a = (idx < len_a) ? a[idx] : 0;
+        const uint32_t limb_b = (idx < len_b) ? b[idx] : 0;
 
-    for (size_t i = 0; i < max_len; i++) {
-        const uint32_t limb_a = i < len_a ? a[i] : 0;
-        const uint32_t limb_b = i < len_b ? b[i] : 0;
-
-        const uint32_t diff = limb_a - limb_b;
-
-        if (diff == 0) {
-            continue;
+        if (limb_a > limb_b) {
+            return 1;
         }
-
-        result = (result_t) (diff < 0 ? -1 : 1);
+        if (limb_a < limb_b) {
+            return -1;
+        }
     }
 
-    return result;
+    return 0;
 }

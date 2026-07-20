@@ -5,11 +5,18 @@
 #ifndef BASALT_SECP256K1_H
 #define BASALT_SECP256K1_H
 
-#include <stddef.h>
 #include <stdint.h>
 
-size_t secp256k1_sign(uint8_t* result, const uint8_t* content, size_t len, const uint32_t private_key[8]);
+#include "../math/bigint.h"
 
-bool secp256k1_verify(const uint8_t* content, size_t len, const uint32_t public_key[8]);
+typedef struct {
+    uint256_t x;
+    uint256_t y;
+    bool infinity;
+} secp256k1_point_t;
+
+void secp256k1_point_init(secp256k1_point_t *point);
+
+void secp256k1_point_add(secp256k1_point_t *result, const secp256k1_point_t *a, const secp256k1_point_t *b);
 
 #endif //BASALT_SECP256K1_H
