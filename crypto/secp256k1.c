@@ -19,7 +19,7 @@ static const uint256_t modulus = {{0xFFFFFC2F, 0xFFFFFFFE, 0xFFFFFFFF, 0xFFFFFFF
 
 static const uint32_t mu[9] = {0x000003D1, 0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 1};
 
-static const modular_ctx ctx = {modulus};
+static const modular_ctx ctx = {.modulus = (uint32_t*) modulus.limbs, .len_modulus = 8};
 
 /*********************************************************
  *                  BARRETT REDUCTION
