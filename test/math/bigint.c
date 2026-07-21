@@ -314,6 +314,129 @@ static uint8_t test_mul_raw_max() {
     return 0;
 }
 
+static uint8_t test_shl_raw_zero_bits() {
+    uint32_t a[4] = {0x12345678, 0xABCDEF01, 0x11223344, 0x55667788};
+    uint32_t result[4] = {0};
+    uint32_t expected[4] = {0x12345678, 0xABCDEF01, 0x11223344, 0x55667788};
+
+    bigint_shl_raw(result, a, 4, 0);
+
+    ASSERT_RAW_GENERIC_EQ(result, expected, 4, "SHL by 0 bits modified the value");
+    return 0;
+}
+
+static uint8_t test_shl_raw_within_limb() {
+    // 0x00000001 << 4 -> 0x00000010
+    uint32_t a[4] = {0x00000001, 0x00000000, 0x00000000, 0x80000000};
+    uint32_t result[4] = {0};
+    // Limb 0 shiften, Limb 3 verliert sein höchstes Bit (läuft über die Grenze des 4-Limb-Puffers hinaus)
+    uint32_t expected[4] = {0x00000010, 0x00000000, 0x00000000, 0x00000000};
+
+    bigint_shl_raw(result, a, 4, 4);
+
+    ASSERT_RAW_GENERIC_EQ(result, expected, 4, "SHL within limb failed");
+    return 0;
+}
+
+static uint8_t test_shl_raw_cross_limb_boundary() {
+    // Bit 31 im Limb 0 wandert durch einen 4-Bit Shift in Limb 1 (Bit 3)
+    uint32_t a[4] = {0x80000000, 0x00000000, 0x00000000, 0x00000000};
+    uint32_t result[4] = {0};
+    uint32_t expected[4] = {0x00000000, 0x00000008, 0x00000000, 0x00000000};
+
+    bigint_shl_raw(result, a, 4, 4);
+
+    ASSERT_RAW_GENERIC_EQ(result, expected, 4, "SHL carry over across limb boundary failed");
+    return 0;
+}
+
+static uint8_t test_shl_raw_exact_limb_multiple() {
+    // Exakt 2 Limbs (64 Bits) nach links verschieben
+    uint32_t a[4] = {0x12345678, 0xABCDEF01, 0x00000000, 0x00000000};
+    uint32_t result[4] = {0};
+    uint32_t expected[4] = {0x00000000, 0x00000000, 0x12345678, 0xABCDEF01};
+
+    bigint_shl_raw(result, a, 4, 64);
+
+    ASSERT_RAW_GENERIC_EQ(result, expected, 4, "SHL by exact limb multiple (64 bits) failed");
+    return 0;
+}
+
+static uint8_t test_shl_raw_mixed_limbs_and_bits() {
+    // 35 Bits = 1 ganze Limb-Verschiebung (32 Bits) + 3 Bits Shift innerhalb des Limbs
+    // 0x00000001 << 35 -> Limb 1 bekommt (1 << 3) = 0x00000008
+    uint32_t a[4] = {0x00000001, 0x00000000, 0x00000000, 0x00000000};
+    uint32_t result[4] = {0};
+    uint32_t expected[4] = {0x00000000, 0x00000008, 0x00000000, 0x00000000};
+
+    bigint_shl_raw(result, a, 4, 35);
+
+    ASSERT_RAW_GENERIC_EQ(result, expected, 4, "SHL by mixed limbs and bits (35 bits) failed");
+    return 0;
+}
+
+// --- SHIFT RIGHT (SHR) ---
+
+static uint8_t test_shr_raw_zero_bits() {
+    uint32_t a[4] = {0x12345678, 0xABCDEF01, 0x11223344, 0x55667788};
+    uint32_t result[4] = {0};
+    uint32_t expected[4] = {0x12345678, 0xABCDEF01, 0x11223344, 0x55667788};
+
+    bigint_shr_raw(result, a, 4, 0);
+
+    ASSERT_RAW_GENERIC_EQ(result, expected, 4, "SHR by 0 bits modified the value");
+    return 0;
+}
+
+static uint8_t test_shr_raw_within_limb() {
+    // 0x00000010 >> 4 -> 0x00000001
+    uint32_t a[4] = {0x00000010, 0x00000000, 0x00000000, 0x00000000};
+    uint32_t result[4] = {0};
+    uint32_t expected[4] = {0x00000001, 0x00000000, 0x00000000, 0x00000000};
+
+    bigint_shr_raw(result, a, 4, 4);
+
+    ASSERT_RAW_GENERIC_EQ(result, expected, 4, "SHR within limb failed");
+    return 0;
+}
+
+static uint8_t test_shr_raw_cross_limb_boundary() {
+    // Bit 3 im Limb 1 wandert durch einen 4-Bit Shift nach rechts in Limb 0 (Bit 31)
+    uint32_t a[4] = {0x00000000, 0x00000008, 0x00000000, 0x00000000};
+    uint32_t result[4] = {0};
+    uint32_t expected[4] = {0x80000000, 0x00000000, 0x00000000, 0x00000000};
+
+    bigint_shr_raw(result, a, 4, 4);
+
+    ASSERT_RAW_GENERIC_EQ(result, expected, 4, "SHR borrow across limb boundary failed");
+    return 0;
+}
+
+static uint8_t test_shr_raw_exact_limb_multiple() {
+    // Exakt 2 Limbs (64 Bits) nach rechts verschieben
+    uint32_t a[4] = {0x00000000, 0x00000000, 0x12345678, 0xABCDEF01};
+    uint32_t result[4] = {0};
+    uint32_t expected[4] = {0x12345678, 0xABCDEF01, 0x00000000, 0x00000000};
+
+    bigint_shr_raw(result, a, 4, 64);
+
+    ASSERT_RAW_GENERIC_EQ(result, expected, 4, "SHR by exact limb multiple (64 bits) failed");
+    return 0;
+}
+
+static uint8_t test_shr_raw_mixed_limbs_and_bits() {
+    // 35 Bits = 1 ganze Limb-Verschiebung (32 Bits) + 3 Bits Shift innerhalb des Limbs
+    // 0x00000008 in Limb 1 >> 35 -> Limb 0 bekommt (8 >> 3) = 0x00000001
+    uint32_t a[4] = {0x00000000, 0x00000008, 0x00000000, 0x00000000};
+    uint32_t result[4] = {0};
+    uint32_t expected[4] = {0x00000001, 0x00000000, 0x00000000, 0x00000000};
+
+    bigint_shr_raw(result, a, 4, 35);
+
+    ASSERT_RAW_GENERIC_EQ(result, expected, 4, "SHR by mixed limbs and bits (35 bits) failed");
+    return 0;
+}
+
 // ===========================================================================
 // MAIN RUNNER
 // ===========================================================================
@@ -374,9 +497,29 @@ int run_bigint_tests() {
     failed |= test_mul_raw_max();
 
     if (failed == 0) {
-        printf("[SUCCESS] Passed all raw multiplication tests!\n");
+        printf("[SUCCESS] Passed all raw multiplication tests!\n\n");
     } else {
-        printf("[FAIL] At least one multiplication test failed\n");
+        printf("[FAIL] At least one multiplication test failed\n\n");
+        return 1;
+    }
+
+    failed = 0;
+    failed |= test_shl_raw_zero_bits();
+    failed |= test_shl_raw_within_limb();
+    failed |= test_shl_raw_cross_limb_boundary();
+    failed |= test_shl_raw_exact_limb_multiple();
+    failed |= test_shl_raw_mixed_limbs_and_bits();
+
+    failed |= test_shr_raw_zero_bits();
+    failed |= test_shr_raw_within_limb();
+    failed |= test_shr_raw_cross_limb_boundary();
+    failed |= test_shr_raw_exact_limb_multiple();
+    failed |= test_shr_raw_mixed_limbs_and_bits();
+
+    if (failed == 0) {
+        printf("[SUCCESS] Passed all raw shift tests!\n");
+    } else {
+        printf("[FAIL] At least one shift test failed\n");
         return 1;
     }
 

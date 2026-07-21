@@ -68,20 +68,20 @@ void secp256k1_mul(uint256_t *result, const uint256_t *a, const uint256_t *b) {
 
 void secp256k1_pow(uint256_t *result, const uint256_t *a, const uint256_t *b) {
     uint256_t exp;
-    memcpy(&exp, b, sizeof(uint256_t));
-
     constexpr uint32_t one = 1;
+    bigint_sub_raw(exp.limbs, b->limbs, 8, &one, 1);
 
-    memset(result->limbs, 0, sizeof(uint32_t) * 8);
-    result->limbs[0] = 1;
+    memcpy(result, a, sizeof(uint256_t));
 
     result_t cmpresult = bigint_cmp_raw(exp.limbs, 8, nullptr, 0);
     while (cmpresult > 0) {
         if ((exp.limbs[0] & 1) != 0) {
-            bigint_sub_raw(exp.limbs, exp.limbs, 8, &one, 1);
+            exp.limbs[0] &= 0xFFFFFFFE;
             secp256k1_mul(result, result, a);
         } else {
-
+            // divide exponent by 2 by shifting 1 to the right
+            bigint_shr_raw(exp.limbs, exp.limbs, 8, 1);
+            secp256k1_mul(result, result, result);
         }
     }
 }

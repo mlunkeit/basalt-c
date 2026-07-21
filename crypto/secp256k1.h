@@ -5,8 +5,6 @@
 #ifndef BASALT_SECP256K1_H
 #define BASALT_SECP256K1_H
 
-#include <stdint.h>
-
 #include "../math/bigint.h"
 
 typedef struct {
