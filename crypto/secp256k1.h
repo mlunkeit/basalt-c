@@ -13,7 +13,11 @@ typedef struct {
     bool infinity;
 } secp256k1_point_t;
 
+extern secp256k1_point_t SECP256K1_G;
+
 void secp256k1_point_init(secp256k1_point_t *point);
+
+bool secp256k1_point_equal(const secp256k1_point_t *a, const secp256k1_point_t *b);
 
 void secp256k1_point_add(secp256k1_point_t *result, const secp256k1_point_t *a, const secp256k1_point_t *b);
 

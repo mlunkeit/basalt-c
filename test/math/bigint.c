@@ -27,7 +27,7 @@
     }
 
 // ===========================================================================
-// ADDITION TESTS (Nutzen jetzt bigint_add_raw)
+// ADDITION TESTS
 // ===========================================================================
 
 static uint8_t test_add_zero() {
@@ -93,7 +93,7 @@ static uint8_t test_add_overflow_wrap() {
 }
 
 // ===========================================================================
-// SUBTRACTION TESTS (Nutzen jetzt bigint_sub_raw)
+// SUBTRACTION TESTS
 // ===========================================================================
 
 static uint8_t test_sub_zero() {
@@ -202,7 +202,7 @@ static uint8_t test_sub_raw_mismatched_lengths() {
 }
 
 // ===========================================================================
-// COMPARISON TESTS (Nutzen jetzt bigint_cmp_raw)
+// COMPARISON TESTS
 // ===========================================================================
 
 static uint8_t test_cmp_equal() {
@@ -256,7 +256,7 @@ static uint8_t test_cmp_less_lsb() {
 }
 
 // ===========================================================================
-// MULTIPLICATION TESTS (Nutzen jetzt bigint_mul_raw)
+// MULTIPLICATION TESTS
 // ===========================================================================
 
 static uint8_t test_mul_raw_zero() {
@@ -329,7 +329,6 @@ static uint8_t test_shl_raw_within_limb() {
     // 0x00000001 << 4 -> 0x00000010
     uint32_t a[4] = {0x00000001, 0x00000000, 0x00000000, 0x80000000};
     uint32_t result[4] = {0};
-    // Limb 0 shiften, Limb 3 verliert sein höchstes Bit (läuft über die Grenze des 4-Limb-Puffers hinaus)
     uint32_t expected[4] = {0x00000010, 0x00000000, 0x00000000, 0x00000000};
 
     bigint_shl_raw(result, a, 4, 4);
@@ -339,7 +338,6 @@ static uint8_t test_shl_raw_within_limb() {
 }
 
 static uint8_t test_shl_raw_cross_limb_boundary() {
-    // Bit 31 im Limb 0 wandert durch einen 4-Bit Shift in Limb 1 (Bit 3)
     uint32_t a[4] = {0x80000000, 0x00000000, 0x00000000, 0x00000000};
     uint32_t result[4] = {0};
     uint32_t expected[4] = {0x00000000, 0x00000008, 0x00000000, 0x00000000};
@@ -351,7 +349,6 @@ static uint8_t test_shl_raw_cross_limb_boundary() {
 }
 
 static uint8_t test_shl_raw_exact_limb_multiple() {
-    // Exakt 2 Limbs (64 Bits) nach links verschieben
     uint32_t a[4] = {0x12345678, 0xABCDEF01, 0x00000000, 0x00000000};
     uint32_t result[4] = {0};
     uint32_t expected[4] = {0x00000000, 0x00000000, 0x12345678, 0xABCDEF01};
@@ -363,8 +360,6 @@ static uint8_t test_shl_raw_exact_limb_multiple() {
 }
 
 static uint8_t test_shl_raw_mixed_limbs_and_bits() {
-    // 35 Bits = 1 ganze Limb-Verschiebung (32 Bits) + 3 Bits Shift innerhalb des Limbs
-    // 0x00000001 << 35 -> Limb 1 bekommt (1 << 3) = 0x00000008
     uint32_t a[4] = {0x00000001, 0x00000000, 0x00000000, 0x00000000};
     uint32_t result[4] = {0};
     uint32_t expected[4] = {0x00000000, 0x00000008, 0x00000000, 0x00000000};
@@ -401,7 +396,6 @@ static uint8_t test_shr_raw_within_limb() {
 }
 
 static uint8_t test_shr_raw_cross_limb_boundary() {
-    // Bit 3 im Limb 1 wandert durch einen 4-Bit Shift nach rechts in Limb 0 (Bit 31)
     uint32_t a[4] = {0x00000000, 0x00000008, 0x00000000, 0x00000000};
     uint32_t result[4] = {0};
     uint32_t expected[4] = {0x80000000, 0x00000000, 0x00000000, 0x00000000};
@@ -413,7 +407,6 @@ static uint8_t test_shr_raw_cross_limb_boundary() {
 }
 
 static uint8_t test_shr_raw_exact_limb_multiple() {
-    // Exakt 2 Limbs (64 Bits) nach rechts verschieben
     uint32_t a[4] = {0x00000000, 0x00000000, 0x12345678, 0xABCDEF01};
     uint32_t result[4] = {0};
     uint32_t expected[4] = {0x12345678, 0xABCDEF01, 0x00000000, 0x00000000};
@@ -425,8 +418,6 @@ static uint8_t test_shr_raw_exact_limb_multiple() {
 }
 
 static uint8_t test_shr_raw_mixed_limbs_and_bits() {
-    // 35 Bits = 1 ganze Limb-Verschiebung (32 Bits) + 3 Bits Shift innerhalb des Limbs
-    // 0x00000008 in Limb 1 >> 35 -> Limb 0 bekommt (8 >> 3) = 0x00000001
     uint32_t a[4] = {0x00000000, 0x00000008, 0x00000000, 0x00000000};
     uint32_t result[4] = {0};
     uint32_t expected[4] = {0x00000001, 0x00000000, 0x00000000, 0x00000000};

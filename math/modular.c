@@ -12,7 +12,7 @@ void modular_init(modular_ctx *ctx, const uint32_t *modulus, const size_t modulu
     ctx->len_modulus = modulus_len;
 }
 
-void modular_add_raw(modular_ctx *ctx, uint32_t *result, const uint32_t *a, const size_t len_a, const uint32_t *b, const size_t len_b) {
+void modular_add_raw(const modular_ctx *ctx, uint32_t *result, const uint32_t *a, const size_t len_a, const uint32_t *b, const size_t len_b) {
     size_t maxsize = len_a > len_b ? len_a : len_b;
 
     uint32_t buf[maxsize + 1];
@@ -30,13 +30,14 @@ void modular_add_raw(modular_ctx *ctx, uint32_t *result, const uint32_t *a, cons
     memcpy(result, buf, sizeof(uint32_t) * ctx->len_modulus);
 }
 
-void modular_sub_raw(modular_ctx *ctx, uint32_t *result, const uint32_t *a, const size_t len_a, const uint32_t *b, const size_t len_b) {
-    memcpy(result, b, sizeof(uint32_t) * len_b);
-    modular_neg_raw(ctx, result, result, len_b);
-    modular_add_raw(ctx, result, result, len_b, a, len_a);
+void modular_sub_raw(const modular_ctx *ctx, uint32_t *result, const uint32_t *a, const size_t len_a, const uint32_t *b, const size_t len_b) {
+    uint32_t buf[ctx->len_modulus];
+    memcpy(buf, b, sizeof(uint32_t) * len_b);
+    modular_neg_raw(ctx, buf, buf, len_b);
+    modular_add_raw(ctx, result, buf, len_b, a, len_a);
 }
 
-void modular_neg_raw(modular_ctx *ctx, uint32_t *result, const uint32_t *a, const size_t len_a) {
+void modular_neg_raw(const modular_ctx *ctx, uint32_t *result, const uint32_t *a, const size_t len_a) {
     if (bigint_cmp_raw(a, len_a, nullptr, 0) == 0) {
         memset(result, 0, sizeof(uint32_t) * ctx->len_modulus);
         return;
