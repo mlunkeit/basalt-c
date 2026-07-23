@@ -6,6 +6,7 @@
 
 int run_bigint_tests();
 int run_modular_tests();
+int run_barrett_tests();
 int run_secp256k1_tests();
 
 int main() {
@@ -19,6 +20,9 @@ int main() {
 
     // 2. Modular Tests ausführen
     total_failed += run_modular_tests();
+    printf("\n-------------------------------\n\n");
+
+    total_failed += run_barrett_tests();
     printf("\n-------------------------------\n\n");
 
     total_failed += run_secp256k1_tests();

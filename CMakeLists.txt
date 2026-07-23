@@ -9,12 +9,15 @@ add_library(basalt STATIC
         math/bigint.h
         math/bigint.c
         math/modular.h
-        math/modular.c)
+        math/modular.c
+        math/barrett.h
+        math/barrett.c)
 
 add_executable(run_tests
         test/math/bigint.c
         test/math/modular.c
         test/crypto/secp256k1.c
-        test/runner.c)
+        test/runner.c
+        test/math/barrett.c)
 
 target_link_libraries(run_tests PRIVATE basalt)
