@@ -30,7 +30,6 @@ void barrett_reduce(
 
     uint32_t r2[2 * k + 1];
     bigint_mul_raw(r2, q3, k + 1, modulus, k);
-    memset(r2 + k + 1, 0, sizeof(uint32_t) * k);
 
     uint32_t r[k + 2];
     bigint_sub_raw(r, r1, k + 1, r2, k + 1);
