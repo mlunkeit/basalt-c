@@ -6,8 +6,9 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "../math/bigint.h"
-#include "../math/modular.h"
+#include "../bigint.h"
+#include "../modular.h"
+#include "../barrett.h"
 
 #include "secp256k1.h"
 
@@ -46,33 +47,7 @@ static constexpr secp256k1_point_t SECP256K1_P = {
  *********************************************************/
 
 void secp256k1_reduce(uint256_t *result, uint32_t x[16]) {
-    uint32_t q1[9] = {0};
-    memcpy(q1, x + 7, sizeof(uint32_t) * 9);
-
-    uint32_t q2[18] = {0};
-    bigint_mul_raw(q2, q1, 9, mu, 9);
-
-    uint32_t q3[9];
-    memcpy(q3, q2 + 9, sizeof(q3));
-
-    uint32_t r1[9];
-    memcpy(r1, x, sizeof(r1));
-
-    uint32_t r2[17] = {0};
-    bigint_mul_raw(r2, q3, 9, modulus.limbs, 8);
-    memset(r2 + 9, 0, sizeof(uint32_t) * 8);
-
-    uint32_t r[10] = {0};
-    bigint_sub_raw(r, r1, 9, r2, 9);
-
-    result_t rmcmp = bigint_cmp_raw(r, 9, modulus.limbs, 8);
-
-    while (rmcmp >= 0) {
-        bigint_sub_raw(r, r, 9, modulus.limbs, 8);
-        rmcmp = bigint_cmp_raw(r, 9, modulus.limbs, 8);
-    }
-
-    memcpy(result->limbs, r, sizeof(uint32_t) * 8);
+    barrett_reduce(result->limbs, x, modulus.limbs, 8, mu);
 }
 
 void secp256k1_mul(uint256_t *result, const uint256_t *a, const uint256_t *b) {

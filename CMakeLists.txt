@@ -4,19 +4,22 @@ project(basalt C)
 set(CMAKE_C_STANDARD 23)
 
 add_library(basalt STATIC
-        crypto/secp256k1.h
-        crypto/secp256k1.c
+        math/curves/secp256k1.h
+        math/curves/secp256k1.c
         math/bigint.h
         math/bigint.c
         math/modular.h
         math/modular.c
         math/barrett.h
-        math/barrett.c)
+        math/barrett.c
+        crypto/hash/sha256.c
+        crypto/hash/sha256.h
+        test/crypto/hash/sha256.c)
 
 add_executable(run_tests
         test/math/bigint.c
         test/math/modular.c
-        test/crypto/secp256k1.c
+        test/math/curves/secp256k1.c
         test/runner.c
         test/math/barrett.c)
 

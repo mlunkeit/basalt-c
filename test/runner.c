@@ -8,6 +8,7 @@ int run_bigint_tests();
 int run_modular_tests();
 int run_barrett_tests();
 int run_secp256k1_tests();
+int run_sha256_tests();
 
 int main() {
     int total_failed = 0;
@@ -26,6 +27,9 @@ int main() {
     printf("\n-------------------------------\n\n");
 
     total_failed += run_secp256k1_tests();
+    printf("\n-------------------------------\n\n");
+
+    total_failed += run_sha256_tests();
     printf("\n-------------------------------\n\n");
 
     // Gesamtergebnis auswerten
