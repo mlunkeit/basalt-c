@@ -3,7 +3,6 @@
 //
 
 #include <string.h>
-#include <stdio.h>
 
 #include "barrett.h"
 #include "bigint.h"

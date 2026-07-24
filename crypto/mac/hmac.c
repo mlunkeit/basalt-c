@@ -30,9 +30,6 @@ void hmac_sha256(uint8_t output[32], const uint8_t *message, const size_t len_me
 
     // inner_hash = SHA256((K0 XOR IPAD) || message) = SHA256(inner_msg_buf)
 
-    uint8_t inner_hash[32];
-    sha256(inner_hash, inner_msg_buf, 64 + len_message);
-
     // outer_msg_buf = (K0 XOR OPAD) || SHA256((K0 XOR IPAD) || message) = (K0 XOR OPAD) || inner_hash
 
     uint8_t outer_msg_buf[96];
@@ -40,7 +37,7 @@ void hmac_sha256(uint8_t output[32], const uint8_t *message, const size_t len_me
         outer_msg_buf[i] = K0[i] ^ OPAD;
     }
 
-    memcpy(outer_msg_buf + 64, inner_hash, 32 * sizeof(uint8_t));
+    sha256(outer_msg_buf + 64, inner_msg_buf, 64 + len_message);
 
     // output = SHA256((K0 XOR OPAD) || SHA256((K0 XOR IPAD) || message)) = SHA256(outer_msg_buf)
     sha256(output, outer_msg_buf, 96);
