@@ -33,7 +33,7 @@ static constexpr uint32_t H0[8] = {
 };
 
 size_t sha256_pad(uint32_t *output, const uint8_t *input, const size_t len) {
-    const size_t blocks = 1 + (len >> 6) + (len % 64 >= 56 ? 1 : 0);
+    const size_t blocks = 1 + (len >> 6) + ((len & 0x3F) >= 56 ? 1 : 0);
 
     uint8_t buf[blocks * 64];
     memset(buf, 0, blocks * 64 * sizeof(uint8_t));
@@ -57,7 +57,7 @@ size_t sha256_pad(uint32_t *output, const uint8_t *input, const size_t len) {
 }
 
 void sha256(uint8_t output[32], const uint8_t *input, const size_t len) {
-    const size_t blocks = 1 + (len >> 6) + (len % 64 >= 56 ? 1 : 0);
+    const size_t blocks = 1 + (len >> 6) + ((len & 0x3F) >= 56 ? 1 : 0);
 
     uint32_t buf[blocks * 16];
     sha256_pad(buf, input, len);
