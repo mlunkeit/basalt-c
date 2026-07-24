@@ -44,15 +44,6 @@ static constexpr uint256_t SECP256K1_N = {
         0xD0364141, 0xBFD25E8C, 0xAF48A03B, 0xBAAEDCE6, 0xFFFFFFFE, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
     }};
 
-/*********************************************************
- *                  BARRETT REDUCTION
- *
- * This is an implementation of the special case of the
- * barrett reduction. It reduces the input to the modulus
- * required by the secp256k1 elliptic curve. It can
- * only handle this special case with 32-bit words.
- *********************************************************/
-
 void secp256k1_reduce(uint256_t *result, uint32_t x[16]) {
     barrett_reduce(result->limbs, x, modulus.limbs, 8, mu);
 }
@@ -210,4 +201,26 @@ void secp256k1_point_add(secp256k1_point_t *result, const secp256k1_point_t *a, 
     result->infinity = false;
     result->x = x3;
     result->y = y3;
+}
+
+void secp256k1_point_scale(secp256k1_point_t *result, const secp256k1_point_t *point, const uint256_t *k) {
+    secp256k1_point_t acc = {0};
+    acc.infinity = true;
+
+    uint256_t scalar;
+    memcpy(&scalar, k, sizeof(uint256_t));
+
+    secp256k1_point_t summand;
+    memcpy(&summand, point, sizeof(secp256k1_point_t));
+
+    while (bigint_cmp_raw(scalar.limbs, 8, nullptr, 0) > 0) {
+        if (scalar.limbs[0] & 0x1) {
+            secp256k1_point_add(&acc, &acc, &summand);
+        }
+
+        secp256k1_point_add(&summand, &summand, &summand);
+        bigint_shr_raw(scalar.limbs, scalar.limbs, 8, 1);
+    }
+
+    memcpy(result, &acc, sizeof(secp256k1_point_t));
 }

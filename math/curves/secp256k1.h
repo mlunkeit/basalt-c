@@ -28,4 +28,6 @@ bool secp256k1_point_equal(const secp256k1_point_t *a, const secp256k1_point_t *
 
 void secp256k1_point_add(secp256k1_point_t *result, const secp256k1_point_t *a, const secp256k1_point_t *b);
 
+void secp256k1_point_scale(secp256k1_point_t *result, const secp256k1_point_t *point, const uint256_t *k);
+
 #endif //BASALT_SECP256K1_H

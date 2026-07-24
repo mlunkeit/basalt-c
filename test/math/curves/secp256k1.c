@@ -298,6 +298,18 @@ static uint8_t test_point_add_in_place() {
     return 0;
 }
 
+static uint8_t test_point_scale_in_place() {
+    uint256_t scalar = {{3, 0, 0, 0, 0, 0, 0, 0}};
+
+    secp256k1_point_t p;
+    secp256k1_point_init(&p);
+    secp256k1_point_scale(&p, &p, &scalar);
+
+    ASSERT_POINT_EQ(p, EXPECTED_3G, "In-place point scaling failed");
+
+    return 0;
+}
+
 int run_secp256k1_tests() {
     printf("Running tests for secp256k1 elliptic curve...\n");
 
@@ -323,6 +335,8 @@ int run_secp256k1_tests() {
     status |= test_point_add_identity();
     status |= test_point_add_inverse();
     status |= test_point_add_in_place();
+
+    status |= test_point_scale_in_place();
 
     if (status != 0) {
         printf("[FAIL] Tests failed\n");
