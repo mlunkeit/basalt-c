@@ -17,8 +17,7 @@ add_library(basalt STATIC
         crypto/mac/hmac.h
         crypto/mac/hmac.c
         crypto/ec/ecdsa.h
-        crypto/ec/ecdsa.c
-        test/crypto/ec/ecdsa.c)
+        crypto/ec/ecdsa.c)
 
 add_executable(run_tests
         test/runner.c
@@ -27,6 +26,7 @@ add_executable(run_tests
         test/math/curves/secp256k1.c
         test/math/barrett.c
         test/crypto/hash/sha256.c
-        test/crypto/mac/hmac.c)
+        test/crypto/mac/hmac.c
+        test/crypto/ec/ecdsa.c)
 
 target_link_libraries(run_tests PRIVATE basalt)
