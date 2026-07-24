@@ -9,7 +9,7 @@
 #include "../mac/hmac.h"
 #include "ecdsa.h"
 
-void rfc6979(uint256_t *result, const uint8_t privkey[32], const uint8_t hash[32], uint256_t *order) {
+void rfc6979(uint256_t *result, const uint8_t privkey[32], const uint8_t hash[32], const uint256_t *order) {
     uint8_t V[32];
     memset(V, 0x01, sizeof(V));
 
@@ -63,5 +63,11 @@ void rfc6979(uint256_t *result, const uint8_t privkey[32], const uint8_t hash[32
 }
 
 void ecdsa_sign_secp256k1(uint8_t output[64], const uint8_t privkey[32], const uint8_t hash[32]) {
+    uint256_t k;
+    rfc6979(&k, privkey, hash, &SECP256K1_N);
 
+    secp256k1_point_t R;
+    secp256k1_point_scale(&R, &SECP256K1_G, &k);
+
+    uint256_t r = R.x;
 }

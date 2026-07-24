@@ -54,39 +54,8 @@ void secp256k1_mul(uint256_t *result, const uint256_t *a, const uint256_t *b) {
     secp256k1_reduce(result, buf);
 }
 
-/*********************************************************
- *                 SQUARE AND MULTIPLY
- *
- * This is an implementation of the square and multiply
- * algorithm that uses barrett reduction to efficiently
- * compute big multiplications.
- *********************************************************/
-
 void secp256k1_pow(uint256_t *result, const uint256_t *a, const uint256_t *b) {
-    uint256_t buf;
-    memset(&buf, 0, sizeof(uint256_t));
-    buf.limbs[0] = 1;
-
-    uint256_t coeff;
-    memcpy(&coeff, a, sizeof(uint256_t));
-
-    uint256_t exp;
-    memcpy(&exp, b, sizeof(uint256_t));
-
-    result_t cmpresult = bigint_cmp_raw(exp.limbs, 8, nullptr, 0);
-    while (cmpresult > 0) {
-
-        if (exp.limbs[0] & 1) {
-            secp256k1_mul(&buf, &buf, &coeff);
-        }
-
-        bigint_shr_raw(exp.limbs, exp.limbs, 8, 1);
-        secp256k1_mul(&coeff, &coeff, &coeff);
-
-        cmpresult = bigint_cmp_raw(exp.limbs, 8, nullptr, 0);
-    }
-
-    memcpy(result, &buf, sizeof(uint256_t));
+    barrett_pow(result->limbs, a->limbs, 8, b->limbs, 8, modulus.limbs, 8, mu);
 }
 
 void secp256k1_invert(uint256_t *result, const uint256_t *a) {

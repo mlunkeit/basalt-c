@@ -42,3 +42,39 @@ void barrett_reduce(
 
     memcpy(result, r, k * sizeof(uint32_t));
 }
+
+void barrett_mul(uint32_t *result, const uint32_t *a, const size_t len_a, const uint32_t *b, const size_t len_b, const uint32_t *modulus, const size_t len_modulus, const uint32_t *mu) {
+    uint32_t buf[2 * len_modulus];
+    memset(buf, 0, 2 * len_modulus * sizeof(uint32_t));
+    bigint_mul_raw(buf, a, len_a, b, len_b);
+    barrett_reduce(result, buf, modulus, len_modulus, mu);
+}
+
+void barrett_pow(uint32_t *result,
+    const uint32_t *a, const size_t len_a,
+    const uint32_t *b, const size_t len_b,
+    const uint32_t *modulus, const size_t len_modulus,
+    const uint32_t *mu) {
+
+    uint32_t acc[len_modulus];
+    memset(acc, 0, len_modulus * sizeof(uint32_t));
+    acc[0] = 1;
+
+    uint32_t coeff[len_modulus];
+    memset(coeff, 0, len_modulus * sizeof(uint32_t));
+    memcpy(coeff, a, len_a * sizeof(uint32_t));
+
+    uint32_t exp[len_b];
+    memcpy(exp, b, len_b * sizeof(uint32_t));
+
+    while (bigint_cmp_raw(exp, len_b, nullptr, 0) > 0) {
+        if (exp[0] & 0x1) {
+            barrett_mul(acc, acc, len_modulus, coeff, len_modulus, modulus, len_modulus, mu);
+        }
+
+        barrett_mul(coeff, coeff, len_modulus, coeff, len_modulus, modulus, len_modulus, mu);
+        bigint_shr_raw(exp, exp, len_b, 1);
+    }
+
+    memcpy(result, acc, len_modulus * sizeof(uint32_t));
+}
