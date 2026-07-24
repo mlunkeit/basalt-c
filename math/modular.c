@@ -7,11 +7,6 @@
 #include "modular.h"
 #include "bigint.h"
 
-void modular_init(modular_ctx *ctx, const uint32_t *modulus, const size_t modulus_len) {
-    ctx->modulus = (uint32_t*) modulus;
-    ctx->len_modulus = modulus_len;
-}
-
 void modular_add_raw(const modular_ctx *ctx, uint32_t *result, const uint32_t *a, const size_t len_a, const uint32_t *b, const size_t len_b) {
     size_t maxsize = len_a > len_b ? len_a : len_b;
 

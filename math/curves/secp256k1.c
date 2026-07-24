@@ -33,19 +33,6 @@ static const modular_ctx mod_ctx = {.modulus = (uint32_t*) modulus.limbs, .len_m
 
 static const barrett_ctx bar_ctx = {.modulus = (uint32_t*) modulus.limbs, .mu = (uint32_t*) mu, .k = 8};
 
-static constexpr secp256k1_point_t SECP256K1_G = {
-    .x = {{0x16F81798, 0x59F2815B, 0x2DCE28D9, 0x029BFCDB, 0xCE870B07, 0x55A06295, 0xF9DCBBAC, 0x79BE667E}},
-    .y = {{0xFB10D4B8, 0x9C47D08F, 0xA6855419, 0xFD17B448, 0x0E1108A8, 0x5DA4FBFC, 0x26A3C465, 0x483ADA77}},
-    .infinity = false
-};
-
-static constexpr uint256_t SECP256K1_P = modulus;
-
-static constexpr uint256_t SECP256K1_N = {
-    {
-        0xD0364141, 0xBFD25E8C, 0xAF48A03B, 0xBAAEDCE6, 0xFFFFFFFE, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
-    }};
-
 void secp256k1_reduce(uint256_t *result, uint32_t x[16]) {
     barrett_reduce(&bar_ctx, result->limbs, x);
 }

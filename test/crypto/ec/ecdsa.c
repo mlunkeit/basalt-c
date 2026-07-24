@@ -3,14 +3,25 @@
 //
 
 #include <stdio.h>
+#include <string.h>
 
 #include "../../../math/bigint.h"
 #include "../../../crypto/hash/sha256.h"
+#include "../../../crypto/ec/ecdsa.h"
 
 #define ASSERT_UINT32_ARRAY_EQ(actual, expected, len, msg) \
     for (size_t i = 0; i < (len); i++) { \
         if ((actual)[i] != (expected)[i]) { \
             printf("[FAIL] %s at limb [%zu]: expected 0x%08X, got 0x%08X (Line %d)\n", \
+                   msg, i, (expected)[i], (actual)[i], __LINE__); \
+            return 1; \
+        } \
+    }
+
+#define ASSERT_BYTES_EQ(actual, expected, len, msg) \
+    for (size_t i = 0; i < (len); i++) { \
+        if ((actual)[i] != (expected)[i]) { \
+            printf("[FAIL] %s at byte [%zu]: expected 0x%02X, got 0x%02X (Line %d)\n", \
                    msg, i, (expected)[i], (actual)[i], __LINE__); \
             return 1; \
         } \
@@ -53,6 +64,37 @@ uint8_t test_rfc6979() {
     return 0;
 }
 
+uint8_t test_ecdsa_secp256k1() {
+    uint8_t order_bytes[32];
+    hex_to_bytes("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", order_bytes);
+
+    uint256_t order;
+    bytes_to_bigint(order.limbs, order_bytes, 32);
+
+    uint8_t privkey[32];
+    memset(privkey, 0, sizeof(privkey));
+    privkey[31] = 1;
+
+    const uint8_t message[] = "sample";
+
+    uint8_t hash[32];
+    sha256(hash, message, 6);
+
+    uint8_t signature[64];
+    ecdsa_sign_secp256k1(signature, privkey, hash);
+
+    uint8_t r_expected[32];
+    hex_to_bytes("58db657bcd631038bea07b4941172f0167aca98f12b55e3176bd1c35435d6501", r_expected);
+
+    uint8_t s_expected[32];
+    hex_to_bytes("3a78e73d8ff8ab554e13c10f6390d81a882f91945d6275493882676170b53a57", s_expected);
+
+    ASSERT_BYTES_EQ(signature, r_expected, 32, "ECDSA signature failed: invalid r");
+    ASSERT_BYTES_EQ(signature + 32, s_expected, 32, "ECDSA signature failed: invalid s");
+
+    return 0;
+}
+
 int run_ecdsa_tests() {
     printf("Running ECDSA tests...\n\n");
 
@@ -64,6 +106,14 @@ int run_ecdsa_tests() {
     } else {
         printf("[FAIL] At least one RFC-6979 test failed.\n");
         return failed;
+    }
+
+    failed |= test_ecdsa_secp256k1();
+
+    if (!failed) {
+        printf("[SUCCESS] All ECDSA tests passed.\n");
+    } else {
+        printf("[FAIL] At least one ECDSA test failed.\n");
     }
 
     return failed;

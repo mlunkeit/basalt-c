@@ -273,8 +273,7 @@ static uint8_t test_point_add_inverse() {
         0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
     }};
 
-    modular_ctx ctx;
-    modular_init(&ctx, p.limbs, 8);
+    const modular_ctx ctx = {.modulus = p.limbs, .len_modulus = 8};
 
     secp256k1_point_t neg_G = G;
     modular_neg_raw(&ctx, neg_G.y.limbs, G.y.limbs, 8);

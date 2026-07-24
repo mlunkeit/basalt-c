@@ -9,9 +9,9 @@
 
 typedef struct {
     // contains k 32-bit words
-    uint32_t *modulus;
+    const uint32_t *modulus;
     // contains k+1 32-bit words
-    uint32_t *mu;
+    const uint32_t *mu;
 
     size_t k;
 } barrett_ctx;

@@ -31,8 +31,7 @@ static uint8_t test_mod_add_simple() {
     uint256_t res = {{0}};
     uint256_t exp = {{75, 0, 0, 0, 0, 0, 0, 0}}; // 40 + 35 = 75 < 100
 
-    modular_ctx ctx;
-    modular_init(&ctx, mod.limbs, 8);
+    modular_ctx ctx = { .modulus = mod.limbs, .len_modulus = 8 };
 
     modular_add_raw(&ctx, res.limbs, a.limbs, 8, b.limbs, 8);
 
@@ -47,8 +46,7 @@ static uint8_t test_mod_add_overflow() {
     uint256_t res = {{0}};
     uint256_t exp = {{15, 0, 0, 0, 0, 0, 0, 0}}; // (60 + 55) - 100 = 15
 
-    modular_ctx ctx;
-    modular_init(&ctx, mod.limbs, 8);
+    modular_ctx ctx = { .modulus = mod.limbs, .len_modulus = 8 };
 
     modular_add_raw(&ctx, res.limbs, a.limbs, 8, b.limbs, 8);
 
@@ -63,8 +61,7 @@ static uint8_t test_mod_add_exact_modulus() {
     uint256_t res = {{0}};
     uint256_t exp = {{0}}; // 40 + 60 = 100 -> 0 mod 100
 
-    modular_ctx ctx;
-    modular_init(&ctx, mod.limbs, 8);
+    modular_ctx ctx = { .modulus = mod.limbs, .len_modulus = 8 };
 
     modular_add_raw(&ctx, res.limbs, a.limbs, 8, b.limbs, 8);
 
@@ -83,8 +80,7 @@ static uint8_t test_mod_sub_simple() {
     uint256_t res = {{0}};
     uint256_t exp = {{45, 0, 0, 0, 0, 0, 0, 0}}; // 75 - 30 = 45
 
-    modular_ctx ctx;
-    modular_init(&ctx, mod.limbs, 8);
+    modular_ctx ctx = { .modulus = mod.limbs, .len_modulus = 8 };
 
     modular_sub_raw(&ctx, res.limbs, a.limbs, 8, b.limbs, 8);
 
@@ -99,8 +95,7 @@ static uint8_t test_mod_sub_underflow() {
     uint256_t res = {{0}};
     uint256_t exp = {{85, 0, 0, 0, 0, 0, 0, 0}}; // (30 - 45) + 100 = 85
 
-    modular_ctx ctx;
-    modular_init(&ctx, mod.limbs, 8);
+    modular_ctx ctx = { .modulus = mod.limbs, .len_modulus = 8 };
 
     modular_sub_raw(&ctx, res.limbs, a.limbs, 8, b.limbs, 8);
 
@@ -118,8 +113,7 @@ static uint8_t test_mod_neg_normal() {
     uint256_t res = {{0}};
     uint256_t exp = {{85, 0, 0, 0, 0, 0, 0, 0}}; // 100 - 15 = 85
 
-    modular_ctx ctx;
-    modular_init(&ctx, mod.limbs, 8);
+    modular_ctx ctx = { .modulus = mod.limbs, .len_modulus = 8 };
 
     modular_neg_raw(&ctx, res.limbs, a.limbs, 8);
 
@@ -133,8 +127,7 @@ static uint8_t test_mod_neg_zero() {
     uint256_t res = {{0}};
     uint256_t exp = {{0}}; // -0 mod 100 = 0
 
-    modular_ctx ctx;
-    modular_init(&ctx, mod.limbs, 8);
+    modular_ctx ctx = { .modulus = mod.limbs, .len_modulus = 8 };
 
     modular_neg_raw(&ctx, res.limbs, a.limbs, 8);
 
@@ -153,8 +146,7 @@ static uint8_t test_mod_mismatched_lengths() {
     uint32_t res[4] = {0};
     uint32_t exp[4] = {0, 1, 0, 0}; // Übertrag schiebt 1 in das zweite Limb
 
-    modular_ctx ctx;
-    modular_init(&ctx, mod, 4);
+    modular_ctx ctx = { .modulus = mod, .len_modulus = 4 };
 
     // a (len 2) + b (len 3), Ergebnis geschrieben in res (len des Modulus = 4)
     modular_add_raw(&ctx, res, a, 2, b, 3);
