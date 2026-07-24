@@ -29,7 +29,9 @@ static constexpr uint32_t mu[9] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000001
 };
 
-static const modular_ctx ctx = {.modulus = (uint32_t*) modulus.limbs, .len_modulus = 8};
+static const modular_ctx mod_ctx = {.modulus = (uint32_t*) modulus.limbs, .len_modulus = 8};
+
+static const barrett_ctx bar_ctx = {.modulus = (uint32_t*) modulus.limbs, .mu = (uint32_t*) mu, .k = 8};
 
 static constexpr secp256k1_point_t SECP256K1_G = {
     .x = {{0x16F81798, 0x59F2815B, 0x2DCE28D9, 0x029BFCDB, 0xCE870B07, 0x55A06295, 0xF9DCBBAC, 0x79BE667E}},
@@ -45,7 +47,7 @@ static constexpr uint256_t SECP256K1_N = {
     }};
 
 void secp256k1_reduce(uint256_t *result, uint32_t x[16]) {
-    barrett_reduce(result->limbs, x, modulus.limbs, 8, mu);
+    barrett_reduce(&bar_ctx, result->limbs, x);
 }
 
 void secp256k1_mul(uint256_t *result, const uint256_t *a, const uint256_t *b) {
@@ -55,12 +57,11 @@ void secp256k1_mul(uint256_t *result, const uint256_t *a, const uint256_t *b) {
 }
 
 void secp256k1_pow(uint256_t *result, const uint256_t *a, const uint256_t *b) {
-    barrett_pow(result->limbs, a->limbs, 8, b->limbs, 8, modulus.limbs, 8, mu);
+    barrett_pow(&bar_ctx, result->limbs, a->limbs, b->limbs);
 }
 
 void secp256k1_invert(uint256_t *result, const uint256_t *a) {
-    // Using Fermats little theorem to find the multiplicative inverse element of a.
-    secp256k1_pow(result, a, &p_minus_2);
+    barrett_inv(&bar_ctx, result->limbs, a->limbs);
 }
 
 bool secp256k1_point_equal(const secp256k1_point_t *a, const secp256k1_point_t *b) {
@@ -85,12 +86,12 @@ void secp256k1_tangent_slope(uint256_t *result, const secp256k1_point_t *a) {
 
     // 2. dividend = 3 * x^2 = x^2 + x^2 + x^2 (mod p)
     uint256_t dividend;
-    modular_add_raw(&ctx, dividend.limbs, x_squared.limbs, 8, x_squared.limbs, 8); // 2x^2
-    modular_add_raw(&ctx, dividend.limbs, dividend.limbs, 8, x_squared.limbs, 8);
+    modular_add_raw(&mod_ctx, dividend.limbs, x_squared.limbs, 8, x_squared.limbs, 8); // 2x^2
+    modular_add_raw(&mod_ctx, dividend.limbs, dividend.limbs, 8, x_squared.limbs, 8);
 
     // divisor = 2y
     uint256_t divisor;
-    modular_add_raw(&ctx, divisor.limbs, a->y.limbs, 8, a->y.limbs, 8);
+    modular_add_raw(&mod_ctx, divisor.limbs, a->y.limbs, 8, a->y.limbs, 8);
 
     uint256_t inv_divisor;
     secp256k1_invert(&inv_divisor, &divisor);
@@ -106,10 +107,10 @@ void secp256k1_points_slope(uint256_t *result, const secp256k1_point_t *a, const
     }
 
     uint256_t dividend;
-    modular_sub_raw(&ctx, dividend.limbs, a->y.limbs, 8, b->y.limbs, 8);
+    modular_sub_raw(&mod_ctx, dividend.limbs, a->y.limbs, 8, b->y.limbs, 8);
 
     uint256_t divisor;
-    modular_sub_raw(&ctx, divisor.limbs, a->x.limbs, 8, b->x.limbs, 8);
+    modular_sub_raw(&mod_ctx, divisor.limbs, a->x.limbs, 8, b->x.limbs, 8);
     secp256k1_invert(&divisor, &divisor);
 
     secp256k1_mul(result, &dividend, &divisor);
@@ -150,22 +151,22 @@ void secp256k1_point_add(secp256k1_point_t *result, const secp256k1_point_t *a, 
     // c = y - mx
     uint256_t offset;
     secp256k1_mul(&offset, &slope, &a->x);
-    modular_neg_raw(&ctx, offset.limbs, offset.limbs, 8);
-    modular_add_raw(&ctx, offset.limbs, a->y.limbs, 8, offset.limbs, 8);
+    modular_neg_raw(&mod_ctx, offset.limbs, offset.limbs, 8);
+    modular_add_raw(&mod_ctx, offset.limbs, a->y.limbs, 8, offset.limbs, 8);
 
     // x3 = m^2 - x2 - x1
     uint256_t m_squared;
     secp256k1_mul(&m_squared, &slope, &slope);
 
     uint256_t x3;
-    modular_sub_raw(&ctx, x3.limbs, m_squared.limbs, 8, b->x.limbs, 8);
-    modular_sub_raw(&ctx, x3.limbs, x3.limbs, 8, a->x.limbs, 8);
+    modular_sub_raw(&mod_ctx, x3.limbs, m_squared.limbs, 8, b->x.limbs, 8);
+    modular_sub_raw(&mod_ctx, x3.limbs, x3.limbs, 8, a->x.limbs, 8);
 
     // y3 = -m * x3 - c
     uint256_t y3;
     secp256k1_mul(&y3, &slope, &x3);
-    modular_neg_raw(&ctx, y3.limbs, y3.limbs, 8);
-    modular_sub_raw(&ctx, y3.limbs, y3.limbs, 8, offset.limbs, 8);
+    modular_neg_raw(&mod_ctx, y3.limbs, y3.limbs, 8);
+    modular_sub_raw(&mod_ctx, y3.limbs, y3.limbs, 8, offset.limbs, 8);
 
     result->infinity = false;
     result->x = x3;

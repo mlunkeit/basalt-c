@@ -4,10 +4,8 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "../../math/bigint.h"
-#include "../../math/modular.h"
+#include "../../math/barrett.h"
 
 #define ASSERT_UINT32_ARRAY_EQ(actual, expected, len, msg) \
     for (size_t i = 0; i < (len); i++) { \
@@ -17,14 +15,6 @@
             return 1; \
         } \
     }
-
-void barrett_reduce(
-    uint32_t *result,
-    const uint32_t *input,
-    const uint32_t *modulus,
-    size_t len_modulus,
-    const uint32_t *mu
-);
 
 // 1. Basic reduction: 0x123456789ABCDEF0 % 13 = 3
 static uint8_t test_barrett_reduce_basic() {
@@ -38,7 +28,9 @@ static uint8_t test_barrett_reduce_basic() {
     uint32_t result[1] = { 0 };
     uint32_t expected[1] = { 0xA };
 
-    barrett_reduce(result, input, modulus, 1, mu);
+    const barrett_ctx ctx = {.modulus = modulus, .mu = mu, .k = 1};
+
+    barrett_reduce(&ctx, result, input);
 
     ASSERT_UINT32_ARRAY_EQ(result, expected, 1, "Basic Barrett reduction (64-bit to 32-bit mod 13) failed");
     return 0;
@@ -61,7 +53,9 @@ static uint8_t test_barrett_reduce_zero() {
     uint32_t result[8] = { 0xFFFFFFFF };
     uint32_t expected[8] = { 0 };
 
-    barrett_reduce(result, input, modulus, 8, mu);
+    const barrett_ctx ctx = {.modulus = modulus, .mu = mu, .k = 8};
+
+    barrett_reduce(&ctx, result, input);
 
     ASSERT_UINT32_ARRAY_EQ(result, expected, 8, "Barrett reduction of zero failed");
     return 0;
@@ -85,7 +79,9 @@ static uint8_t test_barrett_reduce_smaller_than_modulus() {
     uint32_t result[8] = { 0 };
     uint32_t expected[8] = { 0x12345678 };
 
-    barrett_reduce(result, input, modulus, 8, mu);
+    const barrett_ctx ctx = {.modulus = modulus, .mu = mu, .k = 8};
+
+    barrett_reduce(&ctx, result, input);
 
     ASSERT_UINT32_ARRAY_EQ(result, expected, 8, "Barrett reduction for value < modulus failed");
     return 0;
@@ -113,7 +109,9 @@ static uint8_t test_barrett_reduce_exact_modulus() {
     uint32_t result[8] = { 0xFFFFFFFF };
     uint32_t expected[8] = { 0 };
 
-    barrett_reduce(result, input, modulus, 8, mu);
+    const barrett_ctx ctx = {.modulus = modulus, .mu = mu, .k = 8};
+
+    barrett_reduce(&ctx, result, input);
 
     ASSERT_UINT32_ARRAY_EQ(result, expected, 8, "Barrett reduction of exact modulus failed");
     return 0;
@@ -146,7 +144,9 @@ static uint8_t test_barrett_reduce_secp256k1_p_squared_minus_one() {
 
     uint32_t result[8] = { 0 };
 
-    barrett_reduce(result, input, p, 8, mu);
+    const barrett_ctx ctx = {.modulus = (uint32_t*) p, .mu = (uint32_t*) mu, .k = 8};
+
+    barrett_reduce(&ctx, result, input);
 
     ASSERT_UINT32_ARRAY_EQ(result, expected, 8, "Barrett reduction on (p^2 - 1) boundary failed");
     return 0;
@@ -174,7 +174,9 @@ static uint8_t test_barrett_reduce_in_place_aliasing() {
     };
 
     // Reduce directly into the lower 8 limbs of the input buffer
-    barrett_reduce(buffer, buffer, p, 8, mu);
+    const barrett_ctx ctx = {.modulus = (uint32_t*) p, .mu = (uint32_t*) mu, .k = 8};
+
+    barrett_reduce(&ctx, buffer, buffer);
 
     ASSERT_UINT32_ARRAY_EQ(buffer, expected, 8, "In-place Barrett reduction failed");
     return 0;
