@@ -1,0 +1,13 @@
+//
+// Created by M Lunkeit on 24.07.26.
+//
+
+#ifndef BASALT_HMAC_H
+#define BASALT_HMAC_H
+
+#include <stdint.h>
+#include <stddef.h>
+
+void hmac_sha256(uint8_t output[32], const uint8_t *message, size_t len_message, const uint8_t *key, size_t len_key);
+
+#endif //BASALT_HMAC_H

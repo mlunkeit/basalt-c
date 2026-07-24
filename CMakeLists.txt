@@ -14,13 +14,16 @@ add_library(basalt STATIC
         math/barrett.c
         crypto/hash/sha256.c
         crypto/hash/sha256.h
-        test/crypto/hash/sha256.c)
+        crypto/mac/hmac.h
+        crypto/mac/hmac.c)
 
 add_executable(run_tests
+        test/runner.c
         test/math/bigint.c
         test/math/modular.c
         test/math/curves/secp256k1.c
-        test/runner.c
-        test/math/barrett.c)
+        test/math/barrett.c
+        test/crypto/hash/sha256.c
+        test/crypto/mac/hmac.c)
 
 target_link_libraries(run_tests PRIVATE basalt)
