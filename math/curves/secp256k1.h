@@ -13,7 +13,14 @@ typedef struct {
     bool infinity;
 } secp256k1_point_t;
 
-extern secp256k1_point_t SECP256K1_G;
+// The prime modulus of the field.
+static const uint256_t SECP256K1_P;
+
+// The point that generates the cyclic group.
+static const secp256k1_point_t SECP256K1_G;
+
+// The prime order of the cyclic group.
+static const uint256_t SECP256K1_N;
 
 void secp256k1_point_init(secp256k1_point_t *point);
 

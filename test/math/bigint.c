@@ -20,6 +20,15 @@
         } \
     }
 
+#define ASSERT_BYTES_EQ(actual, expected, len, msg) \
+    for (size_t i = 0; i < (len); i++) { \
+        if ((actual)[i] != (expected)[i]) { \
+            printf("[FAIL] %s at byte [%zu]: expected 0x%02X, got 0x%02X (Line %d)\n", \
+                   msg, i, (expected)[i], (actual)[i], __LINE__); \
+            return 1; \
+        } \
+    }
+
 #define ASSERT(cond, msg) \
     if (!(cond)) { \
         printf("[FAIL] %s at line %d\n", msg, __LINE__); \
@@ -428,6 +437,91 @@ static uint8_t test_shr_raw_mixed_limbs_and_bits() {
     return 0;
 }
 
+static uint8_t test_bytes_to_bigint_exact_256bit() {
+    const uint8_t input_bytes[32] = {
+        0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0,
+        0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
+        0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x00,
+        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08
+    };
+
+    const uint32_t expected_limbs[8] = {
+        0x05060708, // Limb 0 (LS)
+        0x01020304, // Limb 1
+        0xDDEEFF00, // Limb 2
+        0x99AABBCC, // Limb 3
+        0x55667788, // Limb 4
+        0x11223344, // Limb 5
+        0x9ABCDEF0, // Limb 6
+        0x12345678  // Limb 7 (MS)
+    };
+
+    uint32_t result_limbs[8] = {0};
+    bytes_to_bigint(result_limbs, input_bytes, 32);
+
+    ASSERT_RAW_GENERIC_EQ(result_limbs, expected_limbs, 8, "bytes_to_bigint 256-bit conversion failed");
+    return 0;
+}
+
+static uint8_t test_bytes_to_bigint_unaligned_padding() {
+    const uint8_t input_bytes[3] = {0xAA, 0xBB, 0xCC};
+
+    // len_result = (3 + 3) >> 2 = 1 Limb
+    // Big-Endian: 0xAA (MSB), 0xBB, 0xCC (LSB)
+    const uint32_t expected_limbs[1] = {0x00AABBCC};
+
+    uint32_t result_limbs[1] = {0};
+    bytes_to_bigint(result_limbs, input_bytes, 3);
+
+    ASSERT_RAW_GENERIC_EQ(result_limbs, expected_limbs, 1, "bytes_to_bigint unaligned byte padding failed");
+    return 0;
+}
+
+static uint8_t test_bigint_to_bytes_exact_256bit() {
+    const uint32_t input_limbs[8] = {
+        0x05060708,
+        0x01020304,
+        0xDDEEFF00,
+        0x99AABBCC,
+        0x55667788,
+        0x11223344,
+        0x9ABCDEF0,
+        0x12345678
+    };
+
+    const uint8_t expected_bytes[32] = {
+        0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0,
+        0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
+        0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x00,
+        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08
+    };
+
+    uint8_t result_bytes[32] = {0};
+    bigint_to_bytes(result_bytes, input_limbs, 8);
+
+    ASSERT_BYTES_EQ(result_bytes, expected_bytes, 32, "bigint_to_bytes 256-bit conversion failed");
+    return 0;
+}
+
+static uint8_t test_conversion_roundtrip() {
+    const uint8_t original_bytes[32] = {
+        0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA, 0x99, 0x88,
+        0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00,
+        0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78,
+        0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0
+    };
+
+    uint32_t intermediate_limbs[8] = {0};
+    uint8_t final_bytes[32] = {0};
+
+    // Bytes -> BigInt -> Bytes
+    bytes_to_bigint(intermediate_limbs, original_bytes, 32);
+    bigint_to_bytes(final_bytes, intermediate_limbs, 8);
+
+    ASSERT_BYTES_EQ(final_bytes, original_bytes, 32, "Roundtrip Bytes -> BigInt -> Bytes failed");
+    return 0;
+}
+
 // ===========================================================================
 // MAIN RUNNER
 // ===========================================================================
@@ -444,7 +538,7 @@ int run_bigint_tests() {
     failed |= test_add_overflow_wrap();
 
     if (failed == 0) {
-        printf("[SUCCESS] Passed all raw addition tests!\n\n");
+        printf("[SUCCESS] Passed all raw addition tests!\n");
     } else {
         printf("[FAIL] At least one addition test failed\n");
         return 1;
@@ -461,7 +555,7 @@ int run_bigint_tests() {
     failed |= test_sub_raw_mismatched_lengths();
 
     if (failed == 0) {
-        printf("[SUCCESS] Passed all raw subtraction tests!\n\n");
+        printf("[SUCCESS] Passed all raw subtraction tests!\n");
     } else {
         printf("[FAIL] At least one subtraction test failed\n");
         return 1;
@@ -475,7 +569,7 @@ int run_bigint_tests() {
     failed |= test_cmp_less_lsb();
 
     if (failed == 0) {
-        printf("[SUCCESS] Passed all raw compare tests!\n\n");
+        printf("[SUCCESS] Passed all raw compare tests!\n");
     } else {
         printf("[FAIL] At least one compare test failed\n");
         return 1;
@@ -488,13 +582,12 @@ int run_bigint_tests() {
     failed |= test_mul_raw_max();
 
     if (failed == 0) {
-        printf("[SUCCESS] Passed all raw multiplication tests!\n\n");
+        printf("[SUCCESS] Passed all raw multiplication tests!\n");
     } else {
-        printf("[FAIL] At least one multiplication test failed\n\n");
+        printf("[FAIL] At least one multiplication test failed\n");
         return 1;
     }
 
-    failed = 0;
     failed |= test_shl_raw_zero_bits();
     failed |= test_shl_raw_within_limb();
     failed |= test_shl_raw_cross_limb_boundary();
@@ -511,6 +604,18 @@ int run_bigint_tests() {
         printf("[SUCCESS] Passed all raw shift tests!\n");
     } else {
         printf("[FAIL] At least one shift test failed\n");
+        return 1;
+    }
+
+    failed |= test_bytes_to_bigint_exact_256bit();
+    failed |= test_bytes_to_bigint_unaligned_padding();
+    failed |= test_bigint_to_bytes_exact_256bit();
+    failed |= test_conversion_roundtrip();
+
+    if (failed == 0) {
+        printf("[SUCCESS] Passed all bigint conversion tests!\n");
+    } else {
+        printf("[FAIL] At least one conversion test failed\n");
         return 1;
     }
 

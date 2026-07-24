@@ -290,7 +290,8 @@ static uint8_t test_point_add_inverse() {
 }
 
 static uint8_t test_point_add_in_place() {
-    secp256k1_point_t p = G;
+    secp256k1_point_t p;
+    secp256k1_point_init(&p);
     secp256k1_point_add(&p, &p, &EXPECTED_2G); // p = G + 2G = 3G
 
     ASSERT_POINT_EQ(p, EXPECTED_3G, "In-place point addition failed");

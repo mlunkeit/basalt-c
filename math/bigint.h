@@ -25,4 +25,8 @@ void bigint_shr_raw(uint32_t *result, const uint32_t *a, size_t len_a, size_t bi
 
 result_t bigint_cmp_raw(const uint32_t *a, size_t len_a, const uint32_t *b, size_t len_b);
 
+void bytes_to_bigint(uint32_t *result, const uint8_t *input, size_t len_input);
+
+void bigint_to_bytes(uint8_t *result, const uint32_t *input, size_t len_input);
+
 #endif //BASALT_BIGUINT256_H

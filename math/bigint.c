@@ -148,3 +148,30 @@ result_t bigint_cmp_raw(const uint32_t *a, const size_t len_a, const uint32_t *b
 
     return 0;
 }
+
+void bytes_to_bigint(uint32_t *result, const uint8_t *input, const size_t len_input) {
+    const size_t len_result = (len_input + 3) >> 2;
+
+    for (size_t i = 0; i < len_result; i++) {
+        const uint32_t seg0 = len_input >= 1 + i * 4 ? input[len_input - 1 - i * 4] : 0;
+        const uint32_t seg1 = len_input >= 2 + i * 4 ? input[len_input - 2 - i * 4] : 0;
+        const uint32_t seg2 = len_input >= 3 + i * 4 ? input[len_input - 3 - i * 4] : 0;
+        const uint32_t seg3 = len_input >= 4 + i * 4 ? input[len_input - 4 - i * 4] : 0;
+
+        result[i] = seg0
+            | (seg1 << 8)
+            | (seg2 << 16)
+            | (seg3 << 24);
+    }
+}
+
+void bigint_to_bytes(uint8_t *result, const uint32_t *input, const size_t len_input) {
+    const size_t len_result = len_input * 4;
+
+    for (size_t i = 0; i < len_input; i++) {
+        result[len_result - 1 - i * 4] = (uint8_t) input[i];
+        result[len_result - 2 - i * 4] = (uint8_t) (input[i] >> 8);
+        result[len_result - 3 - i * 4] = (uint8_t) (input[i] >> 16);
+        result[len_result - 4 - i * 4] = (uint8_t) (input[i] >> 24);
+    }
+}

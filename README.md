@@ -14,9 +14,9 @@
 * **Arbitrary-Precision Arithmetic (BigInt):** Basic 256-bit+ integer arithmetic (Addition, Subtraction, Multiplication).
 * **Modular Arithmetic & Reduction:** Optimized Barrett reduction for fast modular operations.
 * **Elliptic Curve Arithmetic (`secp256k1`):** Point addition, point doubling, and scalar multiplication ($k \cdot P$).
+* **RFC 6979:** Deterministic Nonce Generation with HMAC-SHA256
 
 ### 🚧 Roadmap
-* [ ] **RFC 6979:** Deterministic Nonce Generation for HMAC-SHA256
 * [ ] **ECDSA:** Key generation, signing, and verification (SEC1 33-byte compressed format)
 * [ ] **Schnorr / BIP-340:** X-only public keys (32 bytes) & Schnorr signatures for Bitcoin/Taproot
 

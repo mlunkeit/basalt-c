@@ -10,7 +10,7 @@
 #define IPAD 0x36
 #define OPAD 0x5c
 
-void hmac_sha256(uint8_t output[32], const uint8_t *message, const size_t len_message, const uint8_t *key, const size_t len_key) {
+void hmac_sha256(uint8_t output[32], const uint8_t *key, const size_t len_key, const uint8_t *message, const size_t len_message) {
     uint8_t K0[64] = {0};
 
     if (len_key <= 64) {

@@ -31,11 +31,18 @@ static constexpr uint32_t mu[9] = {
 
 static const modular_ctx ctx = {.modulus = (uint32_t*) modulus.limbs, .len_modulus = 8};
 
-static constexpr secp256k1_point_t SECP256K1_P = {
+static constexpr secp256k1_point_t SECP256K1_G = {
     .x = {{0x16F81798, 0x59F2815B, 0x2DCE28D9, 0x029BFCDB, 0xCE870B07, 0x55A06295, 0xF9DCBBAC, 0x79BE667E}},
     .y = {{0xFB10D4B8, 0x9C47D08F, 0xA6855419, 0xFD17B448, 0x0E1108A8, 0x5DA4FBFC, 0x26A3C465, 0x483ADA77}},
     .infinity = false
 };
+
+static constexpr uint256_t SECP256K1_P = modulus;
+
+static constexpr uint256_t SECP256K1_N = {
+    {
+        0xD0364141, 0xBFD25E8C, 0xAF48A03B, 0xBAAEDCE6, 0xFFFFFFFE, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
+    }};
 
 /*********************************************************
  *                  BARRETT REDUCTION
@@ -154,6 +161,10 @@ bool secp256k1_test_slope_for_infinity(const secp256k1_point_t *a, const secp256
     }
 
     return bigint_cmp_raw(a->x.limbs, 8, b->x.limbs, 8) == 0;
+}
+
+void secp256k1_point_init(secp256k1_point_t *point) {
+    memcpy(point, &SECP256K1_G, sizeof(secp256k1_point_t));
 }
 
 void secp256k1_point_add(secp256k1_point_t *result, const secp256k1_point_t *a, const secp256k1_point_t *b) {

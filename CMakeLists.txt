@@ -15,7 +15,10 @@ add_library(basalt STATIC
         crypto/hash/sha256.c
         crypto/hash/sha256.h
         crypto/mac/hmac.h
-        crypto/mac/hmac.c)
+        crypto/mac/hmac.c
+        crypto/ec/ecdsa.h
+        crypto/ec/ecdsa.c
+        test/crypto/ec/ecdsa.c)
 
 add_executable(run_tests
         test/runner.c

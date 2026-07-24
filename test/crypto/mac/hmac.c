@@ -40,7 +40,7 @@ uint8_t test_hmac_sha256_hithere() {
     hex_to_bytes("b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7", expected);
 
     uint8_t result[32];
-    hmac_sha256(result, data, 8, key, 20);
+    hmac_sha256(result, key, 20, data, 8);
 
     ASSERT_BYTES_EQ(result, expected, 32, "HMAC SHA256 for \"Hi There\" failed!");
 
@@ -55,7 +55,7 @@ uint8_t test_hmac_sha256_key_shorter() {
     hex_to_bytes("5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843", expected);
 
     uint8_t result[32];
-    hmac_sha256(result, data, 28, key, 4);
+    hmac_sha256(result, key, 4, data, 28);
 
     ASSERT_BYTES_EQ(result, expected, 32, "HMAC SHA256 for \"Jefe\" failed!");
 
@@ -72,7 +72,7 @@ uint8_t test_hmac_sha256_large_key() {
     hex_to_bytes("60e431591ee0b67f0d8a26aacbf5b77f8e0bc6213728c5140546040f0ee37f54", expected);
 
     uint8_t result[32];
-    hmac_sha256(result, data, 54, key, 131);
+    hmac_sha256(result, key, 131, data, 54);
 
     ASSERT_BYTES_EQ(result, expected, 32, "HMAC SHA256 for large key failed!");
 
