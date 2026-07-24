@@ -25,7 +25,7 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
-* A C11-compliant C compiler (`gcc`, `clang`, or MSVC)
+* A C23-compliant C compiler (`gcc`, `clang`, or MSVC)
 * `CMake` (or your preferred build runner)
 
 ### Building & Running Tests
