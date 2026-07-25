@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "../../math/bigint.h"
+#include "../../src/math/bigint.h"
 
 #define ASSERT_UINT256_EQ(actual, expected, msg) \
     for (size_t i = 0; i < 8; i++) { \

@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "../../../crypto/hash/sha256.h"
+#include "../../../src/crypto/hash/sha256.h"
 
 #define ASSERT_UINT32_ARRAY_EQ(actual, expected, len, msg) \
     for (size_t i = 0; i < (len); i++) { \

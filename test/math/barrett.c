@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "../../math/barrett.h"
+#include "../../src/math/barrett.h"
 
 #define ASSERT_UINT32_ARRAY_EQ(actual, expected, len, msg) \
     for (size_t i = 0; i < (len); i++) { \

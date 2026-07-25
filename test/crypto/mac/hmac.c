@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../../../crypto/mac/hmac.h"
+#include "../../../src/crypto/mac/hmac.h"
 
 #include <string.h>
 

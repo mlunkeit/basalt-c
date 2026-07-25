@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../../../math/bigint.h"
-#include "../../../crypto/hash/sha256.h"
-#include "../../../crypto/ec/ecdsa.h"
+#include "../../../src/math/bigint.h"
+#include "../../../src/crypto/hash/sha256.h"
+#include "../../../src/crypto/ec/ecdsa.h"
 
 #define ASSERT_UINT32_ARRAY_EQ(actual, expected, len, msg) \
     for (size_t i = 0; i < (len); i++) { \
