@@ -6,6 +6,7 @@
 #define BASALT_BIGUINT256_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 typedef struct uint256_t {
     uint32_t limbs[8];

@@ -17,7 +17,9 @@ add_library(basalt STATIC
         crypto/mac/hmac.h
         crypto/mac/hmac.c
         crypto/ec/ecdsa.h
-        crypto/ec/ecdsa.c)
+        crypto/ec/ecdsa.c
+        crypto/ec/rfc6979.h
+        crypto/ec/rfc6979.c)
 
 add_executable(run_tests
         test/runner.c

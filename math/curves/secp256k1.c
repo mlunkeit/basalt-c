@@ -38,9 +38,7 @@ void secp256k1_reduce(uint256_t *result, uint32_t x[16]) {
 }
 
 void secp256k1_mul(uint256_t *result, const uint256_t *a, const uint256_t *b) {
-    uint32_t buf[16];
-    bigint_mul_raw(buf, a->limbs, 8, b->limbs, 8);
-    secp256k1_reduce(result, buf);
+    barrett_mul(&bar_ctx, result->limbs, a->limbs, b->limbs);
 }
 
 void secp256k1_pow(uint256_t *result, const uint256_t *a, const uint256_t *b) {
