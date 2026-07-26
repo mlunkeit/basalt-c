@@ -9,6 +9,6 @@
 
 #include "../../math/bigint.h"
 
-void rfc6979(uint256_t *result, const uint8_t privkey[32], const uint8_t hash[32], const uint256_t *order);
+void rfc6979(uint32_t result[8], const uint8_t privkey[32], const uint8_t hash[32], const uint32_t order[8]);
 
 #endif //BASALT_RFC6979_H

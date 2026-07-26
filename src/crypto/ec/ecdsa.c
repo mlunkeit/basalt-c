@@ -5,52 +5,62 @@
 #include "../../math/bigint.h"
 #include "../../math/barrett.h"
 #include "../../math/modular.h"
-#include "../../math/curves/secp256k1.h"
 #include "rfc6979.h"
 #include "ecdsa.h"
 
 #include <stdio.h>
 #include <string.h>
 
-void ecdsa_sign_secp256k1(uint8_t output[64], const uint8_t privkey[32], const uint8_t hash[32]) {
-    static constexpr uint32_t MU[9] = {0x2FC9BEC0, 0x402DA173, 0x50B75FC4, 0x45512319, 0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000001};
-    static const barrett_ctx BAR_CTX = {.modulus = SECP256K1_N.limbs, .mu = MU, .k = 8};
-    static const modular_ctx MOD_CTX = {.modulus = SECP256K1_N.limbs, .len_modulus = 8};
+void ecdsa_sign(
+    const wcurve_spec_t *wcurve,
+    ecdsa_signature_t *sig,
+    const ecdsa_private_key_t *key,
+    const uint8_t *hash, const size_t len_hash)
+{
+    const barrett_ctx bar_ctx = {.modulus = wcurve->n, .mu = wcurve->mu_n, .k = wcurve->len_n};
+    const modular_ctx mod_ctx = {.modulus = wcurve->n, .len_modulus = wcurve->len_n};
 
-    static constexpr uint32_t HALF_N[8] = {0x681B20A0, 0xDFE92F46, 0x57A4501D, 0x5D576E73, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x7FFFFFFF};
+    uint32_t half_n[wcurve->len_n];
+    memcpy(half_n, wcurve->n, wcurve->len_n * sizeof(uint32_t));
+    bigint_shr_raw(half_n, half_n, wcurve->len_n, 1);
 
-    uint256_t h;
-    bytes_to_bigint(h.limbs, hash, 32);
+    uint32_t h[wcurve->len_n];
+    bytes_to_bigint(h, hash, len_hash);
 
-    uint256_t d;
-    bytes_to_bigint(d.limbs, privkey, 32);
+    uint8_t privkey_bytes[32];
+    bigint_to_bytes(privkey_bytes, key->d, 32);
 
-    uint256_t k;
-    rfc6979(&k, privkey, hash, &SECP256K1_N);
+    uint32_t k[wcurve->len_n];
+    rfc6979(k, privkey_bytes, hash, wcurve->n);
 
-    secp256k1_point_t R;
-    secp256k1_point_scale(&R, &SECP256K1_G, &k);
+    wcurve_point_t R;
+    wcurve_point_scale(wcurve, &R, &wcurve->g, k);
 
-    uint256_t dr;
-    barrett_mul(&BAR_CTX, dr.limbs, d.limbs, R.x.limbs);
+    uint32_t dr[wcurve->len_n];
+    barrett_mul(&bar_ctx, dr, key->d, R.x);
 
-    uint256_t dividend = {0};
-    modular_add_raw(&MOD_CTX, dividend.limbs, h.limbs, 8, dr.limbs, 8);
+    uint32_t dividend[wcurve->len_n];
+    modular_add_raw(&mod_ctx, dividend, h, wcurve->len_n, dr, wcurve->len_n);
 
-    barrett_inv(&BAR_CTX, k.limbs, k.limbs);
+    barrett_inv(&bar_ctx, k, k);
 
-    uint256_t s;
-    barrett_mul(&BAR_CTX, s.limbs, dividend.limbs, k.limbs);
+    uint32_t s[wcurve->len_n];
+    barrett_mul(&bar_ctx, s, dividend, k);
 
-    if (bigint_cmp_raw(s.limbs, 8, HALF_N, 8) >= 0) {
-        modular_neg_raw(&MOD_CTX, s.limbs, s.limbs, 8);
+    if (bigint_cmp_raw(s, wcurve->len_n, half_n, wcurve->len_n) >= 0) {
+        modular_neg_raw(&mod_ctx, s, s, wcurve->len_n);
     }
 
-    bigint_to_bytes(output, R.x.limbs, 8);
-    bigint_to_bytes(output + 32, s.limbs, 8);
+    memcpy(sig->r, R.x, sizeof(uint32_t) * wcurve->len_p);
+    memcpy(sig->s, s, sizeof(uint32_t) * wcurve->len_n);
 }
 
-bool ecdsa_verify_secp256k1(uint8_t input[64], const uint8_t pubkey[65], const uint8_t hash[32]) {
+bool ecdsa_verify(
+    const wcurve_spec_t *curve,
+    const uint8_t *pubkey,
+    const uint8_t *hash, size_t len_hash,
+    const ecdsa_signature_t *sig)
+{
     if (pubkey[0] != 0x04) {
         // public key is not in a valid uncompressed format
         return false;

@@ -13,11 +13,13 @@
 * **SHA-256:** Fully standard-compliant (FIPS PUB 180-4) implementation.
 * **Arbitrary-Precision Arithmetic (BigInt):** Basic 256-bit+ integer arithmetic (Addition, Subtraction, Multiplication).
 * **Modular Arithmetic & Reduction:** Optimized Barrett reduction for fast modular operations.
-* **Elliptic Curve Arithmetic (`secp256k1`):** Point addition, point doubling, and scalar multiplication ($k \cdot P$).
+* **Elliptic Curve Arithmetic (`secp256k1`):** Point addition, point doubling, and scalar multiplication ($k \cdot P$) using jacobian coordinates.
 * **RFC 6979:** Deterministic Nonce Generation with HMAC-SHA256
+* **ECDSA:** Signing and verification
 
 ### 🚧 Roadmap
-* [ ] **ECDSA:** Key generation, signing, and verification (SEC1 33-byte compressed format)
+* [ ] **ECDSA:** Key generation (SEC1 33-byte compressed format)
+* [ ] **secp256r1:** Elliptic curve arithmetic for the `NIST P-256` curve. 
 * [ ] **Schnorr / BIP-340:** X-only public keys (32 bytes) & Schnorr signatures for Bitcoin/Taproot
 
 ---
@@ -32,7 +34,7 @@
 
 ```bash
 # Clone the repository
-git clone [https://github.com/mlunkeit/basalt-c.git](https://github.com/mlunkeit/basalt-c.git)
+git clone https://github.com/mlunkeit/basalt-c.git
 cd Basalt
 
 # Build project and test suite

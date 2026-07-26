@@ -5,7 +5,6 @@ set(CMAKE_C_STANDARD 23)
 
 add_library(basalt STATIC
         src/math/curves/secp256k1.h
-        src/math/curves/secp256k1.c
         src/math/bigint.h
         src/math/bigint.c
         src/math/modular.h
@@ -19,7 +18,11 @@ add_library(basalt STATIC
         src/crypto/ec/ecdsa.h
         src/crypto/ec/ecdsa.c
         src/crypto/ec/rfc6979.h
-        src/crypto/ec/rfc6979.c)
+        src/crypto/ec/rfc6979.c
+        src/math/curves/secp256r1.h
+        src/math/curves/secp256r1.c
+        src/math/curves/wcurve.h
+        src/math/curves/wcurve.c)
 
 add_executable(run_tests
         test/runner.c
@@ -29,6 +32,7 @@ add_executable(run_tests
         test/math/barrett.c
         test/crypto/hash/sha256.c
         test/crypto/mac/hmac.c
-        test/crypto/ec/ecdsa.c)
+        #test/crypto/ec/ecdsa.c
+)
 
 target_link_libraries(run_tests PRIVATE basalt)

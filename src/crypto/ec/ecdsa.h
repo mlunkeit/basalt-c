@@ -7,8 +7,31 @@
 
 #include <stdint.h>
 
-void ecdsa_sign_secp256k1(uint8_t output[64], const uint8_t privkey[32], const uint8_t hash[32]);
+#include "../../math/curves/wcurve.h"
 
-bool ecdsa_verify_secp256k1(uint8_t input[64], const uint8_t pubkey[65], const uint8_t hash[32]);
+typedef struct {
+    uint32_t r[WCURVE_MAX_LIMBS];
+    uint32_t s[WCURVE_MAX_LIMBS];
+} ecdsa_signature_t;
+
+typedef struct {
+    uint32_t d[WCURVE_MAX_LIMBS];
+} ecdsa_private_key_t;
+
+typedef struct {
+    wcurve_point_t point;
+} ecdsa_public_key_t;
+
+void ecdsa_sign(
+    const wcurve_spec_t *wcurve,
+    ecdsa_signature_t *sig,
+    const ecdsa_private_key_t *key,
+    const uint8_t *hash, size_t len_hash);
+
+bool ecdsa_verify(
+    const wcurve_spec_t *curve,
+    const uint8_t *pubkey,
+    const uint8_t *hash, size_t len_hash,
+    const ecdsa_signature_t *sig);
 
 #endif //BASALT_ECDSA_H

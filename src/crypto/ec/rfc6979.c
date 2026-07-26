@@ -7,7 +7,7 @@
 #include "../mac/hmac.h"
 #include "rfc6979.h"
 
-void rfc6979(uint256_t *result, const uint8_t privkey[32], const uint8_t hash[32], const uint256_t *order) {
+void rfc6979(uint32_t result[8], const uint8_t privkey[32], const uint8_t hash[32], const uint32_t order[8]) {
     uint8_t V[32];
     memset(V, 0x01, sizeof(V));
 
@@ -40,10 +40,10 @@ void rfc6979(uint256_t *result, const uint8_t privkey[32], const uint8_t hash[32
         hmac_sha256(V, K, 32, V, 32);
         memcpy(T, V, 32 * sizeof(uint8_t));
 
-        bytes_to_bigint(result->limbs, T, 32);
+        bytes_to_bigint(result, T, 32);
 
-        const result_t kncmp = bigint_cmp_raw(result->limbs, 8, order->limbs, 8);
-        const result_t k0cmp = bigint_cmp_raw(result->limbs, 8, nullptr, 0);
+        const result_t kncmp = bigint_cmp_raw(result, 8, order, 8);
+        const result_t k0cmp = bigint_cmp_raw(result, 8, nullptr, 0);
 
         if (kncmp < 0 && k0cmp > 0) {
             return;
