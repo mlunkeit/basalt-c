@@ -4,13 +4,20 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include "../bigint.h"
 #include "../modular.h"
 #include "../barrett.h"
 
 #include "secp256k1.h"
+
+typedef struct {
+    uint256_t x;
+    uint256_t y;
+    uint256_t z;
+
+    bool infinity;
+} secp256k1_point_jacobian_t;
 
 static constexpr uint256_t modulus = {
     {
@@ -158,24 +165,198 @@ void secp256k1_point_add(secp256k1_point_t *result, const secp256k1_point_t *a, 
     result->y = y3;
 }
 
+void secp256k1_point_jacobian_double(secp256k1_point_jacobian_t *result, const secp256k1_point_jacobian_t *point) {
+    static constexpr uint256_t three = {.limbs = {3, 0, 0, 0, 0, 0, 0, 0}};
+    static constexpr uint256_t four = {.limbs = {4, 0, 0, 0, 0, 0, 0, 0}};
+    static constexpr uint256_t eight = {.limbs = {8, 0, 0, 0, 0, 0, 0, 0}};
+
+    if (point->infinity) {
+        result->infinity = true;
+        return;
+    }
+
+    if (bigint_cmp_raw(point->y.limbs, 8, nullptr, 0) == 0) {
+        result->infinity = true;
+        return;
+    }
+
+    // M = 3 * X^2
+    uint256_t M;
+    secp256k1_mul(&M, &three, &point->x);
+    secp256k1_mul(&M, &M, &point->x);
+
+    // S = 4 * X * Y^2
+    uint256_t S;
+    secp256k1_mul(&S, &four, &point->x);
+    secp256k1_mul(&S, &S, &point->y);
+    secp256k1_mul(&S, &S, &point->y);
+
+    // T = 8 * Y^4
+    uint256_t T;
+    secp256k1_mul(&T, &eight, &point->y);
+    secp256k1_mul(&T, &T, &point->y);
+    secp256k1_mul(&T, &T, &point->y);
+    secp256k1_mul(&T, &T, &point->y);
+
+    // X3 = M^2 - 2 * S
+    uint256_t X3;
+    secp256k1_mul(&X3, &M, &M);
+    modular_sub_raw(&mod_ctx, X3.limbs, X3.limbs, 8, S.limbs, 8);
+    modular_sub_raw(&mod_ctx, X3.limbs, X3.limbs, 8, S.limbs, 8);
+
+    uint256_t S_minus_X3;
+    modular_sub_raw(&mod_ctx, S_minus_X3.limbs, S.limbs, 8, X3.limbs, 8);
+
+    // Y3 = M * (S - X3) - T
+    uint256_t Y3;
+    secp256k1_mul(&Y3, &M, &S_minus_X3);
+    modular_sub_raw(&mod_ctx, Y3.limbs, Y3.limbs, 8, T.limbs, 8);
+
+    // Z3 = 2 * Y * Z
+    uint256_t Z3;
+    secp256k1_mul(&Z3, &point->y, &point->z);
+    modular_add_raw(&mod_ctx, Z3.limbs, Z3.limbs, 8, Z3.limbs, 8);
+
+    result->infinity = false;
+    result->x = X3;
+    result->y = Y3;
+    result->z = Z3;
+}
+
+void secp256k1_point_jacobian_add(secp256k1_point_jacobian_t *result, const secp256k1_point_jacobian_t *a, const secp256k1_point_jacobian_t *b) {
+    if (a->infinity) {
+        memcpy(result, b, sizeof(secp256k1_point_jacobian_t));
+        return;
+    }
+
+    if (b->infinity) {
+        memcpy(result, a, sizeof(secp256k1_point_jacobian_t));
+        return;
+    }
+
+    // U_1 = X_1 * Z_2^2
+    uint256_t U1;
+    secp256k1_mul(&U1, &a->x, &b->z);   // U1 <- X_1 * Z_2
+    secp256k1_mul(&U1, &U1, &b->z);     // U1 <- U_1 * Z_2
+
+    // U_2 = X_2 * Z_1^2
+    uint256_t U2;
+    secp256k1_mul(&U2, &b->x, &a->z);   // U2 <- X_2 * Z_1
+    secp256k1_mul(&U2, &U2, &a->z);     // U2 <- U_2 * Z_1
+
+    // S_1 = Y_1 * Z_2^3
+    uint256_t S1;
+    secp256k1_mul(&S1, &a->y, &b->z);   // S1 <- Y_1 * Z_2
+    secp256k1_mul(&S1, &S1, &b->z);     // S1 <- S_1 * Z_2
+    secp256k1_mul(&S1, &S1, &b->z);     // S1 <- S_1 * Z_2
+
+    // S_2 = Y_2 * Z_1^3
+    uint256_t S2;
+    secp256k1_mul(&S2, &b->y, &a->z);   // S_2 <- Y_2 * Z_1
+    secp256k1_mul(&S2, &S2, &a->z);     // S_2 <- S_2 * Z_1
+    secp256k1_mul(&S2, &S2, &a->z);     // S_2 <- S_2 * Z_1
+
+    // H = U2 - U1
+    uint256_t H;
+    modular_sub_raw(&mod_ctx, H.limbs, U2.limbs, 8, U1.limbs, 8);
+
+    // R = S2 - S1
+    uint256_t R;
+    modular_sub_raw(&mod_ctx, R.limbs, S2.limbs, 8, S1.limbs, 8);
+
+    if (bigint_cmp_raw(H.limbs, 8, nullptr, 0) == 0) {
+
+        if (bigint_cmp_raw(R.limbs, 8, nullptr, 0) != 0) {
+            result->infinity = true;
+            return;
+        }
+
+        secp256k1_point_jacobian_double(result, a);
+        return;
+    }
+
+    uint256_t H_squared;
+    secp256k1_mul(&H_squared, &H, &H);
+
+    uint256_t H_pow3;
+    secp256k1_mul(&H_pow3, &H_squared, &H);
+
+    // V = U1 * H^2
+    uint256_t V;
+    secp256k1_mul(&V, &U1, &H_squared);
+
+    // W = S1 * H^3
+    uint256_t W;
+    secp256k1_mul(&W, &S1, &H_pow3);
+
+    uint256_t R_squared;
+    secp256k1_mul(&R_squared, &R, &R);
+
+    uint256_t X3;
+    modular_sub_raw(&mod_ctx, X3.limbs, R_squared.limbs, 8, H_pow3.limbs, 8); // X3 <- R^2 - H^3
+    modular_sub_raw(&mod_ctx, X3.limbs, X3.limbs, 8, V.limbs, 8); // X3 <- X3 - U_1*H^2
+    modular_sub_raw(&mod_ctx, X3.limbs, X3.limbs, 8, V.limbs, 8); // X3 <- X3 - U_1*H^2
+
+    uint256_t Z3;
+    secp256k1_mul(&Z3, &H, &a->z);
+    secp256k1_mul(&Z3, &Z3, &b->z);
+
+    uint256_t V_minus_X3;
+    modular_sub_raw(&mod_ctx, V_minus_X3.limbs, V.limbs, 8, X3.limbs, 8);
+
+    // Y3 = R * (V - X3) - W
+    uint256_t Y3;
+    secp256k1_mul(&Y3, &R, &V_minus_X3);
+    modular_sub_raw(&mod_ctx, Y3.limbs, Y3.limbs, 8, W.limbs, 8);
+
+    result->infinity = false;
+    result->x = X3;
+    result->y = Y3;
+    result->z = Z3;
+}
+
 void secp256k1_point_scale(secp256k1_point_t *result, const secp256k1_point_t *point, const uint256_t *k) {
-    secp256k1_point_t acc = {0};
+    secp256k1_point_jacobian_t acc = {0};
     acc.infinity = true;
 
     uint256_t scalar;
     memcpy(&scalar, k, sizeof(uint256_t));
 
-    secp256k1_point_t summand;
-    memcpy(&summand, point, sizeof(secp256k1_point_t));
+    secp256k1_point_jacobian_t summand;
+    memcpy(&summand.x, &point->x, sizeof(uint256_t));
+    memcpy(&summand.y, &point->y, sizeof(uint256_t));
+    memset(&summand.z, 0, sizeof(uint256_t));
+    summand.z.limbs[0] = 1;
+    summand.infinity = point->infinity;
 
     while (bigint_cmp_raw(scalar.limbs, 8, nullptr, 0) > 0) {
         if (scalar.limbs[0] & 0x1) {
-            secp256k1_point_add(&acc, &acc, &summand);
+            secp256k1_point_jacobian_add(&acc, &acc, &summand);
         }
 
-        secp256k1_point_add(&summand, &summand, &summand);
+        secp256k1_point_jacobian_add(&summand, &summand, &summand);
         bigint_shr_raw(scalar.limbs, scalar.limbs, 8, 1);
     }
 
-    memcpy(result, &acc, sizeof(secp256k1_point_t));
+    if (acc.infinity) {
+        result->infinity = true;
+        return;
+    }
+
+    result->infinity = false;
+
+    uint256_t Z_squared;
+    secp256k1_mul(&Z_squared, &acc.z, &acc.z);
+
+    uint256_t Z_squared_inv;
+    secp256k1_invert(&Z_squared_inv, &Z_squared);
+
+    uint256_t Z_pow3;
+    secp256k1_mul(&Z_pow3, &Z_squared, &acc.z);
+
+    uint256_t Z_pow3_inv;
+    secp256k1_invert(&Z_pow3_inv, &Z_pow3);
+
+    secp256k1_mul(&result->x, &acc.x, &Z_squared_inv);
+    secp256k1_mul(&result->y, &acc.y, &Z_pow3_inv);
 }
