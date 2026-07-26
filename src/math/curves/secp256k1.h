@@ -7,21 +7,21 @@
 
 #include "wcurve.h"
 
-static const uint32_t SECP256K1_P[8] = {
+static constexpr uint32_t SECP256K1_P[8] = {
     0xFFFFFC2F, 0xFFFFFFFE, 0xFFFFFFFF, 0xFFFFFFFF,
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
 };
 
-static const uint32_t SECP256K1_N[8] = {
+static constexpr uint32_t SECP256K1_N[8] = {
     0xD0364141, 0xBFD25E8C, 0xAF48A03B, 0xBAAEDCE6,
     0xFFFFFFFE, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
 };
 
-static const uint32_t SECP256K1_A[8] = {0};
+static constexpr uint32_t SECP256K1_A[8] = {0};
 
-static const uint32_t SECP256K1_B[8] = {7, 0, 0, 0, 0, 0, 0, 0};
+static constexpr uint32_t SECP256K1_B[8] = {7, 0, 0, 0, 0, 0, 0, 0};
 
-static const wcurve_point_t SECP256K1_G = {
+static constexpr wcurve_point_t SECP256K1_G = {
     .x = {
         0x16F81798, 0x59F2815B, 0x2DCE28D9, 0x029BFCDB,
         0xCE870B07, 0x55A06295, 0xF9DCBBAC, 0x79BE667E
@@ -32,12 +32,12 @@ static const wcurve_point_t SECP256K1_G = {
     }
 };
 
-static const uint32_t SECP256K1_MU_P[9] = {
+static constexpr uint32_t SECP256K1_MU_P[9] = {
     0x000003D1, 0x00000001, 0x00000000, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000001
 };
 
-static const uint32_t SECP256K1_MU_N[9] = {
+static constexpr uint32_t SECP256K1_MU_N[9] = {
     0x2FC9BEC0, 0x402DA173, 0x50B75FC4, 0x45512319,
     0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000001
 };

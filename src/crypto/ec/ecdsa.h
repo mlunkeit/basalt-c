@@ -29,8 +29,8 @@ void ecdsa_sign(
     const uint8_t *hash, size_t len_hash);
 
 bool ecdsa_verify(
-    const wcurve_spec_t *curve,
-    const uint8_t *pubkey,
+    const wcurve_spec_t *wcurve,
+    const ecdsa_public_key_t *key,
     const uint8_t *hash, size_t len_hash,
     const ecdsa_signature_t *sig);
 
