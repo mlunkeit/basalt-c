@@ -8,6 +8,7 @@
 #include "math/bigint.h"
 #include "math/curves/wcurve.h"
 #include "math/curves/secp256k1.h"
+#include "math/curves/secp256r1.h"
 
 basalt_err_t basalt_ecdsa_sign(
     const basalt_ecdsa_curve_t curve,
@@ -24,6 +25,9 @@ basalt_err_t basalt_ecdsa_sign(
     switch (curve) {
         case BASALT_CURVE_SECP256K1:
             wcurve = &SECP256K1;
+            break;
+        case BASALT_CURVE_SECP256R1:
+            wcurve = &SECP256R1;
             break;
         default:
             wcurve = nullptr;

@@ -8,7 +8,6 @@
 #include "crypto/ec/rfc6979.h"
 #include "crypto/ec/ecdsa.h"
 
-#include <stdio.h>
 #include <string.h>
 
 void ecdsa_sign(
@@ -28,11 +27,8 @@ void ecdsa_sign(
     uint32_t h[wcurve->len_n];
     bytes_to_bigint(h, hash, len_hash);
 
-    uint8_t privkey_bytes[32];
-    bigint_to_bytes(privkey_bytes, d, 8);
-
     uint32_t k[wcurve->len_n];
-    rfc6979(k, privkey_bytes, hash, wcurve->n);
+    rfc6979(wcurve, k, d, hash, len_hash);
 
     wcurve_point_t R;
     wcurve_point_scale(wcurve, &R, &wcurve->g, k);
@@ -90,15 +86,13 @@ bool ecdsa_verify(
     uint32_t u2[wcurve->len_n];
     barrett_mul(&bar_ctx, u2, w, r);
 
-    wcurve_point_t A = wcurve->g;
-
+    wcurve_point_t A = {0};
     wcurve_point_t B = {0};
 
-    // P = u1 * A + u2 * B
+    // P = u1 * G + u2 * E
     wcurve_point_t P = {0};
 
-    wcurve_point_scale(wcurve, &A, &A, u1);
-
+    wcurve_point_scale(wcurve, &A, &wcurve->g, u1);
     wcurve_point_scale(wcurve, &B, e, u2);
 
     wcurve_point_add(wcurve, &P, &A, &B);
@@ -108,7 +102,7 @@ bool ecdsa_verify(
     }
 
     uint32_t Pxbuf[16] = {0};
-    memcpy(Pxbuf, &P.x, 8 * sizeof(uint32_t));
+    memcpy(Pxbuf, &P.x, wcurve->len_p * sizeof(uint32_t));
 
     uint256_t xp;
     barrett_reduce(&bar_ctx, xp.limbs, Pxbuf);

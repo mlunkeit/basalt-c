@@ -3,13 +3,14 @@
 //
 
 #include <stdio.h>
-#include <string.h>
 
 #include "math/bigint.h"
 #include "crypto/hash/sha256.h"
 #include "crypto/ec/ecdsa.h"
+#include "crypto/ec/rfc6979.h"
 
 #include "math/curves/secp256k1.h"
+#include "math/curves/secp256r1.h"
 
 #define ASSERT_UINT32_ARRAY_EQ(actual, expected, len, msg) \
     for (size_t i = 0; i < (len); i++) { \
@@ -29,17 +30,20 @@
         } \
     }
 
-void rfc6979(uint256_t *result, const uint8_t privkey[32], const uint8_t hash[32], uint256_t *order);
-
 static void hex_to_bytes(const char *hex, uint8_t *bytes, const size_t len) {
     for (size_t i = 0; i < len; i++) {
-        sscanf(hex + 2 * i, "%02hhx", &bytes[i]);
+        unsigned int byte;
+        sscanf(hex + 2 * i, "%02x", &byte);
+        bytes[i] = (uint8_t)byte;
     }
 }
 
 uint8_t test_rfc6979() {
     uint8_t privkey[32];
     hex_to_bytes("C9AFA9D845BA75166B5C215767B1D6934E50C3DB36E89B127B8A622B120F6721", privkey, 32);
+
+    uint32_t d[8];
+    bytes_to_bigint(d, privkey, 32);
 
     uint8_t order_bytes[32];
     hex_to_bytes("FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551", order_bytes, 32);
@@ -52,32 +56,22 @@ uint8_t test_rfc6979() {
     uint8_t hash[32];
     sha256(hash, message, 6);
 
-    uint256_t result;
-    rfc6979(&result, privkey, hash, &order);
+    uint32_t result[8];
+    rfc6979(&SECP256R1, result, d, hash, 32);
 
     uint8_t expected_bytes[32];
     hex_to_bytes("A6E3C57DD01ABE90086538398355DD4C3B17AA873382B0F24D6129493D8AAD60", expected_bytes, 32);
 
-    uint256_t expected;
-    bytes_to_bigint(expected.limbs, expected_bytes, 32);
+    uint32_t expected[8];
+    bytes_to_bigint(expected, expected_bytes, 32);
 
-    ASSERT_UINT32_ARRAY_EQ(result.limbs, expected.limbs, 8, "Failed generation of ephemeral deterministic key by RFC-6979 standard.");
+    ASSERT_UINT32_ARRAY_EQ(result, expected, 8, "Failed generation of ephemeral deterministic key by RFC-6979 standard.");
 
     return 0;
 }
 
 uint8_t test_ecdsa_secp256k1_sign() {
-    uint8_t order_bytes[32];
-    hex_to_bytes("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", order_bytes, 32);
-
-    uint256_t order;
-    bytes_to_bigint(order.limbs, order_bytes, 32);
-
-    /*uint8_t privkey[32];
-    memset(privkey, 0, sizeof(privkey));
-    privkey[31] = 1;*/
-
-    uint32_t d[32] = {0};
+    uint32_t d[8] = {0};
     d[0] = 1;
 
     const uint8_t message[] = "sample";
@@ -126,6 +120,7 @@ uint8_t test_ecdsa_secp256k1_verify() {
     wcurve_point_t public_key;
     bytes_to_bigint(public_key.x, pubkey + 1, 32);
     bytes_to_bigint(public_key.y, pubkey + 33, 32);
+    public_key.infinity = false;
 
     const uint8_t message[] = "sample";
 
@@ -156,7 +151,7 @@ int run_ecdsa_tests() {
     }
 
     failed |= test_ecdsa_secp256k1_sign();
-    //failed |= test_ecdsa_secp256k1_verify();
+    failed |= test_ecdsa_secp256k1_verify();
 
     if (!failed) {
         printf("[SUCCESS] All ECDSA tests passed.\n");

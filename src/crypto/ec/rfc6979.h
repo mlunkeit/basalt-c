@@ -7,8 +7,12 @@
 
 #include <stdint.h>
 
-#include "../../math/bigint.h"
+#include "math/curves/wcurve.h"
 
-void rfc6979(uint32_t result[8], const uint8_t privkey[32], const uint8_t hash[32], const uint32_t order[8]);
+void rfc6979(
+    const wcurve_spec_t *wcurve,
+    uint32_t *result,
+    const uint32_t *d,
+    const uint8_t *hash, size_t len_hash);
 
 #endif //BASALT_RFC6979_H

@@ -13,6 +13,7 @@ int run_hmac_tests();
 int run_ecdsa_tests();
 
 int main() {
+    setbuf(stdout, nullptr);
     int total_failed = 0;
 
     printf("=== RUNNING ALL UNIT TESTS ===\n\n");
