@@ -2,36 +2,25 @@
 // Created by M Lunkeit on 24.07.26.
 //
 
-#ifndef BASALT_ECDSA_H
-#define BASALT_ECDSA_H
+#ifndef BASALT_INTERNAL_ECDSA_H
+#define BASALT_INTERNAL_ECDSA_H
 
 #include <stdint.h>
 
-#include "../../math/curves/wcurve.h"
-
-typedef struct {
-    uint32_t r[WCURVE_MAX_LIMBS];
-    uint32_t s[WCURVE_MAX_LIMBS];
-} ecdsa_signature_t;
-
-typedef struct {
-    uint32_t d[WCURVE_MAX_LIMBS];
-} ecdsa_private_key_t;
-
-typedef struct {
-    wcurve_point_t point;
-} ecdsa_public_key_t;
+#include "math/curves/wcurve.h"
 
 void ecdsa_sign(
     const wcurve_spec_t *wcurve,
-    ecdsa_signature_t *sig,
-    const ecdsa_private_key_t *key,
+    uint32_t *r,
+    uint32_t *s,
+    const uint32_t *d,
     const uint8_t *hash, size_t len_hash);
 
 bool ecdsa_verify(
     const wcurve_spec_t *wcurve,
-    const ecdsa_public_key_t *key,
+    const wcurve_point_t *e,
     const uint8_t *hash, size_t len_hash,
-    const ecdsa_signature_t *sig);
+    const uint32_t *r,
+    const uint32_t *s);
 
-#endif //BASALT_ECDSA_H
+#endif //BASALT_INTERNAL_ECDSA_H

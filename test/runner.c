@@ -10,7 +10,7 @@ int run_barrett_tests();
 int run_secp256k1_tests();
 int run_sha256_tests();
 int run_hmac_tests();
-//int run_ecdsa_tests();
+int run_ecdsa_tests();
 
 int main() {
     int total_failed = 0;
@@ -35,8 +35,8 @@ int main() {
     total_failed += run_hmac_tests();
     printf("\n-------------------------------\n\n");
 
-    //total_failed += run_ecdsa_tests();
-    //printf("\n-------------------------------\n\n");
+    total_failed += run_ecdsa_tests();
+    printf("\n-------------------------------\n\n");
 
     if (total_failed == 0) {
         printf("\033[32m[SUCCESS]\033[0m ALL TEST SUITES PASSED SUCCESSFULLY!\n");

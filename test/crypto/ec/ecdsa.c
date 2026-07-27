@@ -5,11 +5,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../../../src/math/bigint.h"
-#include "../../../src/crypto/hash/sha256.h"
-#include "../../../src/crypto/ec/ecdsa.h"
+#include "math/bigint.h"
+#include "crypto/hash/sha256.h"
+#include "crypto/ec/ecdsa.h"
 
-#include "../../../src/math/curves/secp256k1.h"
+#include "math/curves/secp256k1.h"
 
 #define ASSERT_UINT32_ARRAY_EQ(actual, expected, len, msg) \
     for (size_t i = 0; i < (len); i++) { \
@@ -77,16 +77,17 @@ uint8_t test_ecdsa_secp256k1_sign() {
     memset(privkey, 0, sizeof(privkey));
     privkey[31] = 1;*/
 
-    ecdsa_private_key_t privkey = {0};
-    privkey.d[0] = 1;
+    uint32_t d[32] = {0};
+    d[0] = 1;
 
     const uint8_t message[] = "sample";
 
     uint8_t hash[32];
     sha256(hash, message, 6);
 
-    ecdsa_signature_t signature;
-    ecdsa_sign(&SECP256K1, &signature, &privkey, hash, 32);
+    uint32_t r[8];
+    uint32_t s[8];
+    ecdsa_sign(&SECP256K1, r, s, d, hash, 32);
 
     uint8_t r_expected[32];
     hex_to_bytes("58db657bcd631038bea07b4941172f0167aca98f12b55e3176bd1c35435d6501", r_expected, 32);
@@ -95,10 +96,10 @@ uint8_t test_ecdsa_secp256k1_sign() {
     hex_to_bytes("3a78e73d8ff8ab554e13c10f6390d81a882f91945d6275493882676170b53a57", s_expected, 32);
 
     uint8_t r_bytes[32];
-    bigint_to_bytes(r_bytes, signature.r, 8);
+    bigint_to_bytes(r_bytes, r, 8);
 
     uint8_t s_bytes[32];
-    bigint_to_bytes(s_bytes, signature.s, 8);
+    bigint_to_bytes(s_bytes, s, 8);
 
     ASSERT_BYTES_EQ(r_bytes, r_expected, 32, "ECDSA signature failed: invalid r");
     ASSERT_BYTES_EQ(s_bytes, s_expected, 32, "ECDSA signature failed: invalid s");
@@ -116,20 +117,22 @@ uint8_t test_ecdsa_secp256k1_verify() {
     uint8_t s_bytes[32];
     hex_to_bytes("3a78e73d8ff8ab554e13c10f6390d81a882f91945d6275493882676170b53a57", s_bytes, 32);
 
-    ecdsa_signature_t signature;
-    bytes_to_bigint(signature.r, r_bytes, 32);
-    bytes_to_bigint(signature.s, s_bytes, 32);
+    uint32_t r[8];
+    bytes_to_bigint(r, r_bytes, 32);
 
-    ecdsa_public_key_t public_key = {0};
-    bytes_to_bigint(public_key.point.x, pubkey + 1, 32);
-    bytes_to_bigint(public_key.point.y, pubkey + 33, 32);
+    uint32_t s[8];
+    bytes_to_bigint(s, s_bytes, 32);
+
+    wcurve_point_t public_key;
+    bytes_to_bigint(public_key.x, pubkey + 1, 32);
+    bytes_to_bigint(public_key.y, pubkey + 33, 32);
 
     const uint8_t message[] = "sample";
 
     uint8_t hash[32];
     sha256(hash, message, 6);
 
-    const bool verified = ecdsa_verify(&SECP256K1, &public_key, hash, 32, &signature);
+    const bool verified = ecdsa_verify(&SECP256K1, &public_key, hash, 32, r, s);
 
     if (!verified) {
         printf("[FAIL] Verification test with d = 1 failed.\n");
