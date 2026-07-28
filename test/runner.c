@@ -12,6 +12,7 @@ int run_sha256_tests();
 int run_sha512_tests();
 int run_hmac_tests();
 int run_ecdsa_tests();
+int run_bip39_tests();
 
 int main() {
     setbuf(stdout, nullptr);
@@ -41,6 +42,9 @@ int main() {
     printf("\n-------------------------------\n\n");
 
     total_failed += run_ecdsa_tests();
+    printf("\n-------------------------------\n\n");
+
+    total_failed += run_bip39_tests();
     printf("\n-------------------------------\n\n");
 
     if (total_failed == 0) {

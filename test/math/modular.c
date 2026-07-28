@@ -171,7 +171,7 @@ int run_modular_tests() {
     failed |= test_mod_add_exact_modulus();
 
     if (failed == 0) {
-        printf("[SUCCESS] Passed all modular addition tests!\n\n");
+        printf("[SUCCESS] Passed all modular addition tests!\n");
     } else {
         printf("[FAIL] At least one modular addition test failed\n");
         return 1;
@@ -183,7 +183,7 @@ int run_modular_tests() {
     failed |= test_mod_neg_zero();
 
     if (failed == 0) {
-        printf("[SUCCESS] Passed all modular negation tests!\n\n");
+        printf("[SUCCESS] Passed all modular negation tests!\n");
     } else {
         printf("[FAIL] At least one modular negation test failed\n");
         return 1;
@@ -195,7 +195,7 @@ int run_modular_tests() {
     failed |= test_mod_sub_underflow();
 
     if (failed == 0) {
-        printf("[SUCCESS] Passed all modular subtraction tests!\n\n");
+        printf("[SUCCESS] Passed all modular subtraction tests!\n");
     } else {
         printf("[FAIL] At least one modular subtraction test failed\n");
         return 1;
