@@ -78,7 +78,7 @@ uint8_t test_hmac_key_shorter() {
     return 0;
 }
 
-uint8_t test_hmac_sha256_large_key() {
+uint8_t test_hmac_large_key() {
     uint8_t key[131];
     memset(key, 0xAA, sizeof(key));
 
@@ -112,7 +112,7 @@ int run_hmac_tests() {
 
     status |= test_hmac_hithere();
     status |= test_hmac_key_shorter();
-    status |= test_hmac_sha256_large_key();
+    status |= test_hmac_large_key();
 
     if (status == 0) {
         printf("[SUCCESS] All HMAC tests passed!\n");
