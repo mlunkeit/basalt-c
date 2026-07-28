@@ -9,6 +9,7 @@ int run_modular_tests();
 int run_barrett_tests();
 int run_secp256k1_tests();
 int run_sha256_tests();
+int run_sha512_tests();
 int run_hmac_tests();
 int run_ecdsa_tests();
 
@@ -31,6 +32,9 @@ int main() {
     printf("\n-------------------------------\n\n");
 
     total_failed += run_sha256_tests();
+    printf("\n-------------------------------\n\n");
+
+    total_failed += run_sha512_tests();
     printf("\n-------------------------------\n\n");
 
     total_failed += run_hmac_tests();

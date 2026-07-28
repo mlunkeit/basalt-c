@@ -4,10 +4,9 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
 
-#include "../../../src/crypto/hash/sha256.h"
+#include "crypto/hash/sha256.h"
 
 #define ASSERT_UINT32_ARRAY_EQ(actual, expected, len, msg) \
     for (size_t i = 0; i < (len); i++) { \
@@ -33,7 +32,7 @@ static void hex_to_bytes(const char *hex, uint8_t *bytes) {
     }
 }
 
-size_t sha256_pad(uint32_t *output, const uint8_t *input, const size_t len);
+size_t sha256_pad(uint32_t *output, const uint8_t *input, size_t len);
 
 // 1. Pad empty input (len = 0) -> 1 Block, 0x80 Byte, 0x00 Padding, 0 Length
 static uint8_t test_pad_empty_input() {

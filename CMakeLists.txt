@@ -17,6 +17,7 @@ add_library(basalt STATIC
         src/basalt_ecdsa.c
         src/basalt_hmac.c
         src/basalt_sha.c
+        src/crypto/hash/sha512.c
 )
 
 target_include_directories(basalt
@@ -38,7 +39,8 @@ add_executable(run_tests
         test/math/barrett.c
         test/crypto/hash/sha256.c
         test/crypto/mac/hmac.c
-        test/crypto/ec/ecdsa.c)
+        test/crypto/ec/ecdsa.c
+        test/crypto/hash/sha512.c)
 
 target_include_directories(run_tests
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
