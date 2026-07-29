@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+// RFC 2104
+
 void hmac_sha256(uint8_t output[32], const uint8_t *key, size_t len_key, const uint8_t *message, size_t len_message);
 
 void hmac_sha512(uint8_t output[64], const uint8_t *key, size_t len_key, const uint8_t *message, size_t len_message);

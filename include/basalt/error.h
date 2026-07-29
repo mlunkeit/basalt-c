@@ -20,7 +20,8 @@ typedef enum {
     // Cryptographic / Mathematical errors
     BASALT_ERR_VERIFICATION_FAILED = -0x10,
     BASALT_ERR_INVALID_KEY = -0x11,
-    BASALT_ERR_INVALID_SIGNATURE = -0x12
+    BASALT_ERR_INVALID_SIGNATURE = -0x12,
+    BASALT_ERR_DERIVED_KEY_TOO_LONG = -0x13,
 
     // System errors
 } basalt_err_t;

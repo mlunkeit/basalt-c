@@ -7,6 +7,12 @@
 
 #include <stdint.h>
 
+#include "basalt/error.h"
+
 void bip39_generate_mnemonic(char *mnemonic, const uint8_t entropy[16]);
+
+// Uses PBKDF2 standard specified in RFC-2898 to generate a 512-bit seed.
+// The given mnemonic and passphrase have to be null terminated.
+basalt_err_t bip39_generate_seed(uint8_t seed[64], const char *mnemonic, const char *passphrase);
 
 #endif //BASALT_INTERNAL_BIP39_H

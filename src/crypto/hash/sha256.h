@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
+// FIPS 180-4 compliant implementation.
 void sha256(uint8_t output[32], const uint8_t *input, size_t len);
 
 #endif //BASALT_SHA256_H

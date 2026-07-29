@@ -18,9 +18,9 @@ DEFINE_TEST(low_entropy)
     char mnemonic[120] = {0};
     bip39_generate_mnemonic(mnemonic, entropy);
 
-    const char *expected = "legal winner thank year wave sausage worth useful legal winner thank yellow ";
+    const char *expected = "legal winner thank year wave sausage worth useful legal winner thank yellow";
 
-    ASSERT_STR_EQ(expected, mnemonic);
+    ASSERT_STR_EQ(mnemonic, expected);
 
 END_TEST
 

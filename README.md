@@ -16,6 +16,7 @@
 * **Elliptic Curve Arithmetic (`secp256k1, secp256r1`):** Point addition, point doubling, and scalar multiplication ($k \cdot P$) using jacobian coordinates.
 * **RFC 6979:** Deterministic Nonce Generation with HMAC-SHA256
 * **ECDSA:** Signing and verification
+* **PBKDF2:** RFC-2898 compliant password-based key derivation
 
 ### 🚧 Roadmap
 * [ ] **ECDSA:** Key generation (SEC1 33-byte compressed format)

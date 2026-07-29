@@ -13,6 +13,7 @@ INCLUDE_TEST_SUITE(sha512)
 INCLUDE_TEST_SUITE(hmac)
 INCLUDE_TEST_SUITE(ecdsa)
 INCLUDE_TEST_SUITE(bip39)
+INCLUDE_TEST_SUITE(pbkdf2)
 
 int main() {
     setbuf(stdout, nullptr);
@@ -26,6 +27,7 @@ int main() {
     RUN_TEST_SUITE(hmac, "HMAC");
     RUN_TEST_SUITE(ecdsa, "ECDSA");
     RUN_TEST_SUITE(bip39, "BIP-39");
+    RUN_TEST_SUITE(pbkdf2, "PBKDF2");
 
     printf("%s%ssuccess%s All test suites passed successfully!\n", COLOR_GREEN, COLOR_BOLD, COLOR_RESET);
 

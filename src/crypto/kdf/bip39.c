@@ -39,4 +39,10 @@ void bip39_generate_mnemonic(char *mnemonic, const uint8_t entropy[16]) {
         mnemonic[mnemonic_pos] = ' ';
         mnemonic_pos++;
     }
+
+    mnemonic[mnemonic_pos - 1] = '\0';
+}
+
+basalt_err_t bip39_generate_seed(uint8_t seed[64], const char *mnemonic, const char *passphrase) {
+
 }
