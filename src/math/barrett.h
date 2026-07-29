@@ -6,6 +6,7 @@
 #define BASALT_BARRETT_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 typedef struct {
     // contains k 32-bit words

@@ -3,6 +3,8 @@
 //
 
 #include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #include "math/bigint.h"
 #include "crypto/hash/sha256.h"
@@ -11,24 +13,7 @@
 
 #include "math/curves/secp256k1.h"
 #include "math/curves/secp256r1.h"
-
-#define ASSERT_UINT32_ARRAY_EQ(actual, expected, len, msg) \
-    for (size_t i = 0; i < (len); i++) { \
-        if ((actual)[i] != (expected)[i]) { \
-            printf("[FAIL] %s at limb [%zu]: expected 0x%08X, got 0x%08X (Line %d)\n", \
-                   msg, i, (expected)[i], (actual)[i], __LINE__); \
-            return 1; \
-        } \
-    }
-
-#define ASSERT_BYTES_EQ(actual, expected, len, msg) \
-    for (size_t i = 0; i < (len); i++) { \
-        if ((actual)[i] != (expected)[i]) { \
-            printf("[FAIL] %s at byte [%zu]: expected 0x%02X, got 0x%02X (Line %d)\n", \
-                   msg, i, (expected)[i], (actual)[i], __LINE__); \
-            return 1; \
-        } \
-    }
+#include "unittest.h"
 
 static void hex_to_bytes(const char *hex, uint8_t *bytes, const size_t len) {
     for (size_t i = 0; i < len; i++) {
@@ -38,7 +23,12 @@ static void hex_to_bytes(const char *hex, uint8_t *bytes, const size_t len) {
     }
 }
 
-uint8_t test_rfc6979() {
+// ===========================================================================
+// RFC-6979 & ECDSA TESTS
+// ===========================================================================
+
+// 1. RFC-6979 Ephemeral Deterministic Key Generation (secp256r1)
+DEFINE_TEST(rfc6979_ephemeral_key_secp256r1)
     uint8_t privkey[32];
     hex_to_bytes("C9AFA9D845BA75166B5C215767B1D6934E50C3DB36E89B127B8A622B120F6721", privkey, 32);
 
@@ -65,12 +55,11 @@ uint8_t test_rfc6979() {
     uint32_t expected[8];
     bytes_to_bigint(expected, expected_bytes, 32);
 
-    ASSERT_UINT32_ARRAY_EQ(result, expected, 8, "Failed generation of ephemeral deterministic key by RFC-6979 standard.");
+    ASSERT_RAW_GENERIC_EQ(result, expected, 8);
+END_TEST
 
-    return 0;
-}
-
-uint8_t test_ecdsa_secp256k1_sign() {
+// 2. ECDSA Sign Test (secp256k1)
+DEFINE_TEST(ecdsa_secp256k1_sign)
     uint32_t d[8] = {0};
     d[0] = 1;
 
@@ -95,13 +84,12 @@ uint8_t test_ecdsa_secp256k1_sign() {
     uint8_t s_bytes[32];
     bigint_to_bytes(s_bytes, s, 8);
 
-    ASSERT_BYTES_EQ(r_bytes, r_expected, 32, "ECDSA signature failed: invalid r");
-    ASSERT_BYTES_EQ(s_bytes, s_expected, 32, "ECDSA signature failed: invalid s");
+    ASSERT_BYTES_EQ(r_bytes, r_expected, 32);
+    ASSERT_BYTES_EQ(s_bytes, s_expected, 32);
+END_TEST
 
-    return 0;
-}
-
-uint8_t test_ecdsa_secp256k1_verify() {
+// 3. ECDSA Verify Test (secp256k1)
+DEFINE_TEST(ecdsa_secp256k1_verify)
     uint8_t pubkey[65];
     hex_to_bytes("0479BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8", pubkey, 65);
 
@@ -130,34 +118,22 @@ uint8_t test_ecdsa_secp256k1_verify() {
     const bool verified = ecdsa_verify(&SECP256K1, &public_key, hash, 32, r, s);
 
     if (!verified) {
-        printf("[FAIL] Verification test with d = 1 failed.\n");
+        printf("[FAIL] %s: Verification test with d = 1 failed (Line %d)\n", __func__, __LINE__);
         return 1;
     }
+END_TEST
 
-    return 0;
-}
+// ===========================================================================
+// MAIN RUNNER
+// ===========================================================================
 
-int run_ecdsa_tests() {
-    printf("Running ECDSA tests...\n\n");
+DEFINE_TEST_SUITE(ecdsa)
 
-    uint8_t failed = 0;
-    failed |= test_rfc6979();
+    // RFC-6979 TESTS
+    RUN_TEST(rfc6979_ephemeral_key_secp256r1, "RFC-6979 ephemeral key generation (secp256r1)");
 
-    if (!failed) {
-        printf("[SUCCESS] All RFC-6979 tests passed.\n");
-    } else {
-        printf("[FAIL] At least one RFC-6979 test failed.\n");
-        return failed;
-    }
+    // ECDSA TESTS
+    RUN_TEST(ecdsa_secp256k1_sign, "ECDSA signature generation (secp256k1)");
+    RUN_TEST(ecdsa_secp256k1_verify, "ECDSA signature verification (secp256k1)");
 
-    failed |= test_ecdsa_secp256k1_sign();
-    failed |= test_ecdsa_secp256k1_verify();
-
-    if (!failed) {
-        printf("[SUCCESS] All ECDSA tests passed.\n");
-    } else {
-        printf("[FAIL] At least one ECDSA test failed.\n");
-    }
-
-    return failed;
-}
+END_TEST_SUITE

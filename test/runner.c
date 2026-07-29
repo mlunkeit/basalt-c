@@ -2,56 +2,32 @@
 // Created by M Lunkeit on 19.07.26.
 //
 
-#include <stdio.h>
+#include "unittest.h"
 
-int run_bigint_tests();
-int run_modular_tests();
-int run_barrett_tests();
-int run_secp256k1_tests();
-int run_sha256_tests();
-int run_sha512_tests();
-int run_hmac_tests();
-int run_ecdsa_tests();
-int run_bip39_tests();
+INCLUDE_TEST_SUITE(bigint)
+INCLUDE_TEST_SUITE(modular)
+INCLUDE_TEST_SUITE(barrett)
+INCLUDE_TEST_SUITE(secp256k1)
+INCLUDE_TEST_SUITE(sha256)
+INCLUDE_TEST_SUITE(sha512)
+INCLUDE_TEST_SUITE(hmac)
+INCLUDE_TEST_SUITE(ecdsa)
+INCLUDE_TEST_SUITE(bip39)
 
 int main() {
     setbuf(stdout, nullptr);
-    int total_failed = 0;
 
-    printf("=== RUNNING ALL UNIT TESTS ===\n\n");
+    RUN_TEST_SUITE(bigint, "big integer arithmetic");
+    RUN_TEST_SUITE(modular, "modular arithmetic");
+    RUN_TEST_SUITE(barrett, "barrett reduction");
+    RUN_TEST_SUITE(secp256k1, "secp256k1 elliptic curve arithmetic");
+    RUN_TEST_SUITE(sha256, "SHA-256");
+    RUN_TEST_SUITE(sha512, "SHA-512");
+    RUN_TEST_SUITE(hmac, "HMAC");
+    RUN_TEST_SUITE(ecdsa, "ECDSA");
+    RUN_TEST_SUITE(bip39, "BIP-39");
 
-    total_failed += run_bigint_tests();
-    printf("\n-------------------------------\n\n");
+    printf("%s%ssuccess%s All test suites passed successfully!\n", COLOR_GREEN, COLOR_BOLD, COLOR_RESET);
 
-    total_failed += run_modular_tests();
-    printf("\n-------------------------------\n\n");
-
-    total_failed += run_barrett_tests();
-    printf("\n-------------------------------\n\n");
-
-    total_failed += run_secp256k1_tests();
-    printf("\n-------------------------------\n\n");
-
-    total_failed += run_sha256_tests();
-    printf("\n-------------------------------\n\n");
-
-    total_failed += run_sha512_tests();
-    printf("\n-------------------------------\n\n");
-
-    total_failed += run_hmac_tests();
-    printf("\n-------------------------------\n\n");
-
-    total_failed += run_ecdsa_tests();
-    printf("\n-------------------------------\n\n");
-
-    total_failed += run_bip39_tests();
-    printf("\n-------------------------------\n\n");
-
-    if (total_failed == 0) {
-        printf("\033[32m[SUCCESS]\033[0m ALL TEST SUITES PASSED SUCCESSFULLY!\n");
-    } else {
-        printf("\033[31m[FAIL]\033[0m System check failed. Total errors found: %d\n", total_failed);
-    }
-
-    return total_failed;
+    return 0;
 }

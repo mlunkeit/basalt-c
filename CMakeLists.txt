@@ -18,7 +18,6 @@ add_library(basalt STATIC
         src/basalt_hmac.c
         src/basalt_sha.c
         src/crypto/hash/sha512.c
-        src/crypto/kdf/bip39words.h
         src/crypto/kdf/bip39.c
 )
 
@@ -47,6 +46,7 @@ add_executable(run_tests
 
 target_include_directories(run_tests
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test
 )
 
 target_link_libraries(run_tests PRIVATE basalt)

@@ -26,9 +26,8 @@ void bip39_generate_mnemonic(char *mnemonic, const uint8_t entropy[16]) {
         uint8_t seg0 = byte_idx < 17 ? seed[byte_idx] : 0;
         uint8_t seg1 = byte_idx < 16 ? seed[byte_idx + 1] : 0;
         uint8_t seg2 = byte_idx < 15 ? seed[byte_idx + 2] : 0;
-        uint8_t seg3 = byte_idx < 14 ? seed[byte_idx + 3] : 0;
 
-        uint32_t wordidx = seg0 << 24 | seg1 << 16 | seg2 << 8 | seg3;
+        uint32_t wordidx = seg0 << 24 | seg1 << 16 | seg2 << 8;
         wordidx <<= byte_offset;
         wordidx >>= 21;
 

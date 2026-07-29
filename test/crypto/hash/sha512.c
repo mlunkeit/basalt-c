@@ -8,24 +8,7 @@
 #include <string.h>
 
 #include "crypto/hash/sha512.h"
-
-#define ASSERT_UINT64_ARRAY_EQ(actual, expected, len, msg) \
-    for (size_t i = 0; i < (len); i++) { \
-        if ((actual)[i] != (expected)[i]) { \
-            printf("[FAIL] %s at limb [%zu]: expected 0x%016llx, got 0x%016llx (Line %d)\n", \
-                   msg, i, (expected)[i], (actual)[i], __LINE__); \
-            return 1; \
-        } \
-    }
-
-#define ASSERT_BYTES_EQ(actual, expected, len, msg) \
-    for (size_t i = 0; i < (len); i++) { \
-        if ((actual)[i] != (expected)[i]) { \
-            printf("[FAIL] %s at byte [%zu]: expected 0x%02X, got 0x%02X (Line %d)\n", \
-                   msg, i, (expected)[i], (actual)[i], __LINE__); \
-            return 1; \
-        } \
-    }
+#include "unittest.h"
 
 static void hex_to_bytes(const char *hex, uint8_t *bytes, size_t len) {
     for (size_t i = 0; i < len; i++) {
@@ -35,8 +18,12 @@ static void hex_to_bytes(const char *hex, uint8_t *bytes, size_t len) {
 
 size_t sha512_pad(uint64_t *output, const uint8_t *input, size_t len);
 
+// ===========================================================================
+// SHA-512 PADDING TESTS
+// ===========================================================================
+
 // 1. Pad empty input (len = 0) -> 1 Block (128 Bytes / 16 x uint64_t)
-static uint8_t test_pad512_empty_input() {
+DEFINE_TEST(sha512_pad_empty_input)
     const uint8_t input[1] = { 0 };
     uint64_t output[16] = { 0 };
 
@@ -51,16 +38,15 @@ static uint8_t test_pad512_empty_input() {
     size_t blocks = sha512_pad(output, input, 0);
 
     if (blocks != 1) {
-        printf("[FAIL] test_pad512_empty_input: expected 1 block, got %zu (Line %d)\n", blocks, __LINE__);
+        printf("[FAIL] %s: expected 1 block, got %zu (Line %d)\n", __func__, blocks, __LINE__);
         return 1;
     }
 
-    ASSERT_UINT64_ARRAY_EQ(output, expected, 16, "Padding empty input failed for SHA-512");
-    return 0;
-}
+    ASSERT_UINT64ARR_EQ(output, expected, 16);
+END_TEST
 
 // 2. Pad Standard String "abc" (3 Bytes) -> 1 Block (24 bits)
-static uint8_t test_pad512_abc_standard() {
+DEFINE_TEST(sha512_pad_abc_standard)
     const uint8_t input[3] = { 'a', 'b', 'c' }; // 0x61, 0x62, 0x63
     uint64_t output[16] = { 0 };
 
@@ -76,16 +62,15 @@ static uint8_t test_pad512_abc_standard() {
     size_t blocks = sha512_pad(output, input, 3);
 
     if (blocks != 1) {
-        printf("[FAIL] test_pad512_abc_standard: expected 1 block, got %zu (Line %d)\n", blocks, __LINE__);
+        printf("[FAIL] %s: expected 1 block, got %zu (Line %d)\n", __func__, blocks, __LINE__);
         return 1;
     }
 
-    ASSERT_UINT64_ARRAY_EQ(output, expected, 16, "Padding 'abc' failed for SHA-512");
-    return 0;
-}
+    ASSERT_UINT64ARR_EQ(output, expected, 16);
+END_TEST
 
 // 3. Exact boundary: len = 111 Bytes -> Fits in exactly 1 Block (111 data + 1 pad + 16 length = 128 Bytes)
-static uint8_t test_pad512_exact_111_bytes() {
+DEFINE_TEST(sha512_pad_exact_111_bytes)
     uint8_t input[111];
     memset(input, 'A', 111); // 0x41
     uint64_t output[16] = { 0 };
@@ -102,16 +87,15 @@ static uint8_t test_pad512_exact_111_bytes() {
     size_t blocks = sha512_pad(output, input, 111);
 
     if (blocks != 1) {
-        printf("[FAIL] test_pad512_exact_111_bytes: expected 1 block, got %zu (Line %d)\n", blocks, __LINE__);
+        printf("[FAIL] %s: expected 1 block, got %zu (Line %d)\n", __func__, blocks, __LINE__);
         return 1;
     }
 
-    ASSERT_UINT64_ARRAY_EQ(output, expected, 16, "Padding 111-byte input failed for SHA-512");
-    return 0;
-}
+    ASSERT_UINT64ARR_EQ(output, expected, 16);
+END_TEST
 
 // 4. Overflow boundary: len = 112 Bytes -> Requires 2 Blocks (128 uint64_t entries = 256 Bytes space)
-static uint8_t test_pad512_overflow_112_bytes() {
+DEFINE_TEST(sha512_pad_overflow_112_bytes)
     uint8_t input[112];
     memset(input, 'B', 112); // 0x42
     uint64_t output[32] = { 0 };
@@ -127,16 +111,15 @@ static uint8_t test_pad512_overflow_112_bytes() {
     size_t blocks = sha512_pad(output, input, 112);
 
     if (blocks != 2) {
-        printf("[FAIL] test_pad512_overflow_112_bytes: expected 2 blocks, got %zu (Line %d)\n", blocks, __LINE__);
+        printf("[FAIL] %s: expected 2 blocks, got %zu (Line %d)\n", __func__, blocks, __LINE__);
         return 1;
     }
 
-    ASSERT_UINT64_ARRAY_EQ(output, expected, 32, "Padding 112-byte input overflow failed for SHA-512");
-    return 0;
-}
+    ASSERT_UINT64ARR_EQ(output, expected, 32);
+END_TEST
 
 // 5. Full 128-Byte Block -> Requires 2 Blocks
-static uint8_t test_pad512_exact_128_bytes() {
+DEFINE_TEST(sha512_pad_exact_128_bytes)
     uint8_t input[128];
     memset(input, 'C', 128); // 0x43
     uint64_t output[32] = { 0 };
@@ -151,15 +134,18 @@ static uint8_t test_pad512_exact_128_bytes() {
     size_t blocks = sha512_pad(output, input, 128);
 
     if (blocks != 2) {
-        printf("[FAIL] test_pad512_exact_128_bytes: expected 2 blocks, got %zu (Line %d)\n", blocks, __LINE__);
+        printf("[FAIL] %s: expected 2 blocks, got %zu (Line %d)\n", __func__, blocks, __LINE__);
         return 1;
     }
 
-    ASSERT_UINT64_ARRAY_EQ(output, expected, 32, "Padding 128-byte input failed for SHA-512");
-    return 0;
-}
+    ASSERT_UINT64ARR_EQ(output, expected, 32);
+END_TEST
 
-static uint8_t test_empty_message_512() {
+// ===========================================================================
+// SHA-512 HASH EXECUTION TESTS
+// ===========================================================================
+
+DEFINE_TEST(sha512_hash_empty_message)
     uint8_t input[1] = { 0 };
     uint8_t output[64] = { 0 };
 
@@ -176,18 +162,10 @@ static uint8_t test_empty_message_512() {
 
     sha512(output, input, 0);
 
-    for (size_t i = 0; i < 64; i++) {
-        if (output[i] != expected[i]) {
-            printf("[FAIL] test_empty_message_512 at byte [%zu]: expected 0x%02X, got 0x%02X (Line %d)\n",
-                   i, expected[i], output[i], __LINE__);
-            return 1;
-        }
-    }
+    ASSERT_BYTES_EQ(output, expected, 64);
+END_TEST
 
-    return 0; // PASS
-}
-
-static uint8_t test_abc_standard_512() {
+DEFINE_TEST(sha512_hash_abc_standard)
     uint8_t input[3] = { 'a', 'b', 'c' };
     uint8_t output[64] = { 0 };
     uint8_t expected[64];
@@ -199,11 +177,10 @@ static uint8_t test_abc_standard_512() {
 
     sha512(output, input, 3);
 
-    ASSERT_BYTES_EQ(output, expected, 64, "SHA-512 for 'abc' failed");
-    return 0;
-}
+    ASSERT_BYTES_EQ(output, expected, 64);
+END_TEST
 
-static uint8_t test_overflow_512() {
+DEFINE_TEST(sha512_hash_overflow)
     const uint8_t input[] = "Hello World! dofjsoidfjsodjfoisdjfoisdjfoisjofijsoidjfkjalasewjlsjf";
     size_t len = sizeof(input) - 1;
 
@@ -217,38 +194,27 @@ static uint8_t test_overflow_512() {
 
     sha512(output, input, len);
 
-    ASSERT_BYTES_EQ(output, expected, 64, "SHA-512 for overflow string failed");
-    return 0;
-}
+    ASSERT_BYTES_EQ(output, expected, 64);
+END_TEST
 
-int run_sha512_tests() {
-    printf("Running tests for SHA-512...\n");
+// ===========================================================================
+// MAIN RUNNER
+// ===========================================================================
 
-    uint8_t status = 0;
+DEFINE_TEST_SUITE(sha512)
 
-    status |= test_pad512_abc_standard();
-    status |= test_pad512_exact_111_bytes();
-    status |= test_pad512_overflow_112_bytes();
-    status |= test_pad512_exact_128_bytes();
-    status |= test_pad512_empty_input();
+    // PADDING TESTS
 
-    if (status != 0) {
-        printf("[FAIL] SHA-512 padding tests failed\n");
-        return 1;
-    } else {
-        printf("[SUCCESS] All SHA-512 padding tests passed!\n");
-    }
+    RUN_TEST(sha512_pad_empty_input, "padding empty input");
+    RUN_TEST(sha512_pad_abc_standard, "padding NIST standard 'abc'");
+    RUN_TEST(sha512_pad_exact_111_bytes, "padding exact 111-byte boundary");
+    RUN_TEST(sha512_pad_overflow_112_bytes, "padding overflow 112-byte boundary");
+    RUN_TEST(sha512_pad_exact_128_bytes, "padding exact 128-byte block");
 
-    status |= test_empty_message_512();
-    status |= test_abc_standard_512();
-    status |= test_overflow_512();
+    // HASHING TESTS
 
-    if (status != 0) {
-        printf("[FAIL] SHA-512 tests failed\n");
-        return 1;
-    } else {
-        printf("[SUCCESS] SHA-512 tests passed!\n");
-    }
+    RUN_TEST(sha512_hash_empty_message, "hashing empty message");
+    RUN_TEST(sha512_hash_abc_standard, "hashing 'abc'");
+    RUN_TEST(sha512_hash_overflow, "hashing multi-block overflow message");
 
-    return status;
-}
+END_TEST_SUITE

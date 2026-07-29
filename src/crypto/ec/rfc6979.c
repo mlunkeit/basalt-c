@@ -5,8 +5,8 @@
 #include <string.h>
 
 #include "crypto/mac/hmac.h"
+#include "crypto/ec/rfc6979.h"
 #include "math/bigint.h"
-#include "rfc6979.h"
 
 void rfc6979(
     const wcurve_spec_t *wcurve,

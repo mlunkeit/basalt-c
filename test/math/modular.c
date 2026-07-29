@@ -1,30 +1,12 @@
-#include <stdio.h>
 #include <stdint.h>
-#include "../../src/math/modular.h"
-
-#define ASSERT_UINT256_EQ(actual, expected, msg) \
-    for (size_t i = 0; i < 8; i++) { \
-        if ((actual).limbs[i] != (expected).limbs[i]) { \
-            printf("[FAIL] %s at limb [%zu]: expected 0x%08X, got 0x%08X (Line %d)\n", \
-                   msg, i, (expected).limbs[i], (actual).limbs[i], __LINE__); \
-            return 1; \
-        } \
-    }
-
-#define ASSERT_RAW_GENERIC_EQ(actual, expected, len, msg) \
-    for (size_t i = 0; i < (len); i++) { \
-        if ((actual)[i] != (expected)[i]) { \
-            printf("[FAIL] %s at limb [%zu]: expected 0x%08X, got 0x%08X (Line %d)\n", \
-                   msg, i, (expected)[i], (actual)[i], __LINE__); \
-            return 1; \
-        } \
-    }
+#include "math/modular.h"
+#include "unittest.h"
 
 // ===========================================================================
 // MODULAR ADDITION TESTS
 // ===========================================================================
 
-static uint8_t test_mod_add_simple() {
+DEFINE_TEST(mod_add_simple)
     uint256_t mod = {{100, 0, 0, 0, 0, 0, 0, 0}}; // Modulus = 100
     uint256_t a   = {{40, 0, 0, 0, 0, 0, 0, 0}};
     uint256_t b   = {{35, 0, 0, 0, 0, 0, 0, 0}};
@@ -35,11 +17,10 @@ static uint8_t test_mod_add_simple() {
 
     modular_add_raw(&ctx, res.limbs, a.limbs, 8, b.limbs, 8);
 
-    ASSERT_UINT256_EQ(res, exp, "Simple modular addition failed");
-    return 0;
-}
+    ASSERT_UINT256_EQ(res, exp);
+END_TEST
 
-static uint8_t test_mod_add_overflow() {
+DEFINE_TEST(mod_add_overflow)
     uint256_t mod = {{100, 0, 0, 0, 0, 0, 0, 0}};
     uint256_t a   = {{60, 0, 0, 0, 0, 0, 0, 0}};
     uint256_t b   = {{55, 0, 0, 0, 0, 0, 0, 0}};
@@ -50,11 +31,10 @@ static uint8_t test_mod_add_overflow() {
 
     modular_add_raw(&ctx, res.limbs, a.limbs, 8, b.limbs, 8);
 
-    ASSERT_UINT256_EQ(res, exp, "Modular addition overflow reduction failed");
-    return 0;
-}
+    ASSERT_UINT256_EQ(res, exp);
+END_TEST
 
-static uint8_t test_mod_add_exact_modulus() {
+DEFINE_TEST(mod_add_exact_modulus)
     uint256_t mod = {{100, 0, 0, 0, 0, 0, 0, 0}};
     uint256_t a   = {{40, 0, 0, 0, 0, 0, 0, 0}};
     uint256_t b   = {{60, 0, 0, 0, 0, 0, 0, 0}};
@@ -65,15 +45,14 @@ static uint8_t test_mod_add_exact_modulus() {
 
     modular_add_raw(&ctx, res.limbs, a.limbs, 8, b.limbs, 8);
 
-    ASSERT_UINT256_EQ(res, exp, "Addition resulting exactly in modulus failed to wrap to 0");
-    return 0;
-}
+    ASSERT_UINT256_EQ(res, exp);
+END_TEST
 
 // ===========================================================================
 // MODULAR SUBTRACTION TESTS
 // ===========================================================================
 
-static uint8_t test_mod_sub_simple() {
+DEFINE_TEST(mod_sub_simple)
     uint256_t mod = {{100, 0, 0, 0, 0, 0, 0, 0}};
     uint256_t a   = {{75, 0, 0, 0, 0, 0, 0, 0}};
     uint256_t b   = {{30, 0, 0, 0, 0, 0, 0, 0}};
@@ -84,11 +63,10 @@ static uint8_t test_mod_sub_simple() {
 
     modular_sub_raw(&ctx, res.limbs, a.limbs, 8, b.limbs, 8);
 
-    ASSERT_UINT256_EQ(res, exp, "Simple modular subtraction failed");
-    return 0;
-}
+    ASSERT_UINT256_EQ(res, exp);
+END_TEST
 
-static uint8_t test_mod_sub_underflow() {
+DEFINE_TEST(mod_sub_underflow)
     uint256_t mod = {{100, 0, 0, 0, 0, 0, 0, 0}};
     uint256_t a   = {{30, 0, 0, 0, 0, 0, 0, 0}};
     uint256_t b   = {{45, 0, 0, 0, 0, 0, 0, 0}};
@@ -99,15 +77,14 @@ static uint8_t test_mod_sub_underflow() {
 
     modular_sub_raw(&ctx, res.limbs, a.limbs, 8, b.limbs, 8);
 
-    ASSERT_UINT256_EQ(res, exp, "Modular subtraction underflow correction failed");
-    return 0;
-}
+    ASSERT_UINT256_EQ(res, exp);
+END_TEST
 
 // ===========================================================================
 // MODULAR NEGATION TESTS
 // ===========================================================================
 
-static uint8_t test_mod_neg_normal() {
+DEFINE_TEST(mod_neg_normal)
     uint256_t mod = {{100, 0, 0, 0, 0, 0, 0, 0}};
     uint256_t a   = {{15, 0, 0, 0, 0, 0, 0, 0}};
     uint256_t res = {{0}};
@@ -117,11 +94,10 @@ static uint8_t test_mod_neg_normal() {
 
     modular_neg_raw(&ctx, res.limbs, a.limbs, 8);
 
-    ASSERT_UINT256_EQ(res, exp, "Modular negation of positive value failed");
-    return 0;
-}
+    ASSERT_UINT256_EQ(res, exp);
+END_TEST
 
-static uint8_t test_mod_neg_zero() {
+DEFINE_TEST(mod_neg_zero)
     uint256_t mod = {{100, 0, 0, 0, 0, 0, 0, 0}};
     uint256_t a   = {{0}};
     uint256_t res = {{0}};
@@ -131,86 +107,51 @@ static uint8_t test_mod_neg_zero() {
 
     modular_neg_raw(&ctx, res.limbs, a.limbs, 8);
 
-    ASSERT_UINT256_EQ(res, exp, "Modular negation of zero must remain zero");
-    return 0;
-}
+    ASSERT_UINT256_EQ(res, exp);
+END_TEST
 
 // ===========================================================================
 // MISMATCHED LENGTHS & EDGE CASES
 // ===========================================================================
 
-static uint8_t test_mod_mismatched_lengths() {
-    uint32_t mod[4] = {0, 0, 0, 1}; // Modulus über 4 Limbs gestreckt
+DEFINE_TEST(mod_mismatched_lengths)
+    uint32_t mod[4] = {0, 0, 0, 1};
     uint32_t a[2]   = {0xFFFFFFFF, 0x00000000};
     uint32_t b[3]   = {1, 0, 0};
     uint32_t res[4] = {0};
-    uint32_t exp[4] = {0, 1, 0, 0}; // Übertrag schiebt 1 in das zweite Limb
+    uint32_t exp[4] = {0, 1, 0, 0};
 
     modular_ctx ctx = { .modulus = mod, .len_modulus = 4 };
 
-    // a (len 2) + b (len 3), Ergebnis geschrieben in res (len des Modulus = 4)
     modular_add_raw(&ctx, res, a, 2, b, 3);
 
-    ASSERT_RAW_GENERIC_EQ(res, exp, 4, "Modular addition with mismatched array lengths failed");
-    return 0;
-}
+    ASSERT_RAW_GENERIC_EQ(res, exp, 4);
+END_TEST
 
 // ===========================================================================
 // MAIN RUNNER
 // ===========================================================================
 
-int run_modular_tests() {
-    printf("Starting raw Modular Arithmetic tests...\n\n");
+DEFINE_TEST_SUITE(modular)
 
-    uint8_t failed = 0;
+    // MODULAR ADDITION TESTS
 
-    // Addition
+    RUN_TEST(mod_add_simple, "simple modular addition");
+    RUN_TEST(mod_add_overflow, "modular addition with overflow reduction");
+    RUN_TEST(mod_add_exact_modulus, "modular addition resulting exactly in modulus");
 
-    failed |= test_mod_add_simple();
-    failed |= test_mod_add_overflow();
-    failed |= test_mod_add_exact_modulus();
+    // MODULAR SUBTRACTION TESTS
 
-    if (failed == 0) {
-        printf("[SUCCESS] Passed all modular addition tests!\n");
-    } else {
-        printf("[FAIL] At least one modular addition test failed\n");
-        return 1;
-    }
+    RUN_TEST(mod_sub_simple, "simple modular subtraction");
+    RUN_TEST(mod_sub_underflow, "modular subtraction with underflow correction");
 
-    // Negation
-    failed = 0;
-    failed |= test_mod_neg_normal();
-    failed |= test_mod_neg_zero();
+    // MODULAR NEGATION TESTS
 
-    if (failed == 0) {
-        printf("[SUCCESS] Passed all modular negation tests!\n");
-    } else {
-        printf("[FAIL] At least one modular negation test failed\n");
-        return 1;
-    }
+    RUN_TEST(mod_neg_normal, "modular negation of positive value");
+    RUN_TEST(mod_neg_zero, "modular negation of zero");
 
-    // Subtraction
-    failed = 0;
-    failed |= test_mod_sub_simple();
-    failed |= test_mod_sub_underflow();
+    // MISMATCHED LENGTHS & EDGE CASES
 
-    if (failed == 0) {
-        printf("[SUCCESS] Passed all modular subtraction tests!\n");
-    } else {
-        printf("[FAIL] At least one modular subtraction test failed\n");
-        return 1;
-    }
+    RUN_TEST(mod_mismatched_lengths, "modular addition with mismatched array lengths");
 
-    // Mismatched lengths
-    failed = 0;
-    failed |= test_mod_mismatched_lengths();
-
-    if (failed == 0) {
-        printf("[SUCCESS] Passed all dynamic length modular tests!\n");
-    } else {
-        printf("[FAIL] Mismatched length modular test failed\n");
-        return 1;
-    }
-
-    return 0;
-}
+END_TEST_SUITE
