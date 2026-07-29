@@ -37,9 +37,60 @@ git clone https://github.com/mlunkeit/basalt-c.git
 cd Basalt
 
 # Build project and test suite
-mkdir build && cd build
-cmake ..
-make
+cmake -B build
+cmake --build build
 
 # Run unit tests
+cd build
 ./run_tests
+```
+
+## Examples
+
+### Generating an ECDSA signature
+
+```c++
+#include <stdint.h>
+
+#include <basalt/ecdsa.h>
+#include <basalt/sha.h>
+
+uint8_t message[12] = "Hello World!";
+
+uint8_t hash[32]; // SHA-256 generates a 256-bit (32-byte) hash
+if (basalt_sha256(hash, message, 12) != 0) {
+    // handle error
+}
+
+// (private key generation is not ready yet)
+basalt_ecdsa_private_key_t privkey = ...
+
+basalt_ecdsa_signature_t sig;
+if (basalt_ecdsa_sign(BASALT_CURVE_SECP256K1, &sig, &privkey, hash, 32) != 0) {
+    // handle error
+}
+```
+
+### Verifying an ECDSA signature
+
+```c++
+#include <stdint.h>
+
+#include <basalt/ecdsa.h>
+#include <basalt/sha.h>
+
+uint8_t message[12] = "Hello World!";
+
+uint8_t hash[32];
+if (basalt_sha256(hash, message, 12) != 0) {
+    // handle error
+}
+
+// retrieve the public key and the signature
+basalt_ecdsa_public_key_t pubkey = ...
+basalt_ecdsa_signature_t sig = ...
+
+if (basalt_ecdsa_verify(BASALT_CURVE_SECP256K1, &pubkey, hash, 32, &sig) != 0) {
+    // handle error
+}
+```
