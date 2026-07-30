@@ -22,20 +22,20 @@ void bip39_generate_mnemonic(char *mnemonic, const uint8_t entropy[16]) {
     size_t mnemonic_pos = 0;
 
     for (size_t i = 0; i < 12; i++) {
-        size_t bit = i * 11;
-        size_t byte_idx = bit >> 3;
-        size_t byte_offset = bit & 7;
+        const size_t bit = i * 11;
+        const size_t byte_idx = bit >> 3;
+        const size_t byte_offset = bit & 7;
 
-        uint8_t seg0 = byte_idx < 17 ? seed[byte_idx] : 0;
-        uint8_t seg1 = byte_idx < 16 ? seed[byte_idx + 1] : 0;
-        uint8_t seg2 = byte_idx < 15 ? seed[byte_idx + 2] : 0;
+        const uint8_t seg0 = byte_idx < 17 ? seed[byte_idx] : 0;
+        const uint8_t seg1 = byte_idx < 16 ? seed[byte_idx + 1] : 0;
+        const uint8_t seg2 = byte_idx < 15 ? seed[byte_idx + 2] : 0;
 
         uint32_t wordidx = seg0 << 24 | seg1 << 16 | seg2 << 8;
         wordidx <<= byte_offset;
         wordidx >>= 21;
 
         const char *word = WORDLIST[wordidx];
-        size_t wordlen = strlen(word);
+        const size_t wordlen = strlen(word);
 
         memcpy(mnemonic + mnemonic_pos, word, wordlen);
         mnemonic_pos += wordlen;
@@ -63,7 +63,7 @@ basalt_err_t bip39_generate_seed(uint8_t seed[64], const char *mnemonic, const c
         len_salt += len_passphrase;
     }
 
-    basalt_err_t status = pbkdf2_hmac_sha512(seed, 64,
+    const basalt_err_t status = pbkdf2_hmac_sha512(seed, 64,
         (uint8_t*) mnemonic, strlen(mnemonic),
         (uint8_t*) salt, len_salt,
         2048);
