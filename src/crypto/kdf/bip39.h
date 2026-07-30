@@ -9,6 +9,8 @@
 
 #include "basalt/error.h"
 
+#define BIP39_PASSPHRASE_MAX_LENGTH 64
+
 void bip39_generate_mnemonic(char *mnemonic, const uint8_t entropy[16]);
 
 // Uses PBKDF2 standard specified in RFC-2898 to generate a 512-bit seed.

@@ -16,6 +16,7 @@ typedef enum {
     BASALT_ERR_INVALID_PARAM = -0x01,
     BASALT_ERR_UNSUPPORTED_CURVE = -0x02,
     BASALT_ERR_NULL_POINTER = -0x03,
+    BASALT_ERR_INPUT_TOO_LONG = -0x04,
 
     // Cryptographic / Mathematical errors
     BASALT_ERR_VERIFICATION_FAILED = -0x10,

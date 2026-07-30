@@ -4,9 +4,12 @@
 
 #include <string.h>
 
+#include "basalt/mem.h"
+
 #include "crypto/hash/sha256.h"
 #include "crypto/kdf/bip39.h"
 #include "crypto/kdf/bip39words.h"
+#include "crypto/kdf/pbkdf2.h"
 
 void bip39_generate_mnemonic(char *mnemonic, const uint8_t entropy[16]) {
     uint8_t hash[32];
@@ -44,5 +47,27 @@ void bip39_generate_mnemonic(char *mnemonic, const uint8_t entropy[16]) {
 }
 
 basalt_err_t bip39_generate_seed(uint8_t seed[64], const char *mnemonic, const char *passphrase) {
+    // 8 for "mnemonic" + maximum passphrase length
+    char salt[8 + BIP39_PASSPHRASE_MAX_LENGTH] = "mnemonic";
 
+    size_t len_salt = 8;
+
+    if (passphrase) {
+        size_t len_passphrase = strlen(passphrase);
+
+        if (len_passphrase > BIP39_PASSPHRASE_MAX_LENGTH) {
+            return BASALT_ERR_INPUT_TOO_LONG;
+        }
+
+        memcpy(salt + 8, passphrase, len_passphrase);
+        len_salt += len_passphrase;
+    }
+
+    basalt_err_t status = pbkdf2_hmac_sha512(seed, 64,
+        (uint8_t*) mnemonic, strlen(mnemonic),
+        (uint8_t*) salt, len_salt,
+        2048);
+
+    basalt_memzero(salt, 8 + BIP39_PASSPHRASE_MAX_LENGTH);
+    return status;
 }

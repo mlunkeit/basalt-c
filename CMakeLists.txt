@@ -20,6 +20,7 @@ add_library(basalt STATIC
         src/crypto/hash/sha512.c
         src/crypto/kdf/bip39.c
         src/crypto/kdf/pbkdf2.c
+        include/basalt/mem.h
 )
 
 target_include_directories(basalt
