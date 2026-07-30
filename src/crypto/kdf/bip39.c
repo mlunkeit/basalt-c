@@ -11,17 +11,26 @@
 #include "crypto/kdf/bip39words.h"
 #include "crypto/kdf/pbkdf2.h"
 
-void bip39_generate_mnemonic(char *mnemonic, const uint8_t entropy[16]) {
+basalt_err_t bip39_generate_mnemonic(char *mnemonic, const uint8_t *entropy, const size_t len_entropy) {
+
+    if (!entropy) {
+        return BASALT_ERR_NULL_POINTER;
+    }
+
+    if (len_entropy != 16 && len_entropy != 24 && len_entropy != 32) {
+        return BASALT_ERR_INVALID_PARAM;
+    }
+
     uint8_t hash[32];
     sha256(hash, entropy, 16);
 
-    uint8_t seed[17];
-    memcpy(seed, entropy, 16);
-    seed[16] = hash[0] & 0xF0;
+    uint8_t seed[25];
+    memcpy(seed, entropy, len_entropy);
+    seed[len_entropy] = hash[0];
 
     size_t mnemonic_pos = 0;
 
-    for (size_t i = 0; i < 12; i++) {
+    for (size_t i = 0; i < (len_entropy * 3) >> 2; i++) {
         const size_t bit = i * 11;
         const size_t byte_idx = bit >> 3;
         const size_t byte_offset = bit & 7;
@@ -44,9 +53,24 @@ void bip39_generate_mnemonic(char *mnemonic, const uint8_t entropy[16]) {
     }
 
     mnemonic[mnemonic_pos - 1] = '\0';
+
+    return BASALT_OK;
 }
 
 basalt_err_t bip39_generate_seed(uint8_t seed[64], const char *mnemonic, const char *passphrase) {
+    /*
+     * Quoting BIP-39:
+     *
+     * A user may decide to protect their mnemonic with a passphrase. If a passphrase is not present,
+     * an empty string "" is used instead.
+     *
+     * To create a binary seed from the mnemonic, we use the PBKDF2 function with a mnemonic
+     * sentence (in UTF-8 NFKD) used as the password and the string "mnemonic" + passphrase
+     * (again in UTF-8 NFKD) used as the salt.
+     * The iteration count is set to 2048 and HMAC-SHA512 is used as the pseudo-random function.
+     * The length of the derived key is 512 bits (= 64 bytes).
+     */
+
     // 8 for "mnemonic" + maximum passphrase length
     char salt[8 + BIP39_PASSPHRASE_MAX_LENGTH] = "mnemonic";
 
