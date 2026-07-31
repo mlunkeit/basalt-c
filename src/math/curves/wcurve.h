@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define WCURVE_MAX_LIMBS 18
+#define WCURVE_MAX_LIMBS 8
 
 typedef struct {
     uint32_t x[WCURVE_MAX_LIMBS];
