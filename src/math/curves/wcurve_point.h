@@ -12,14 +12,15 @@
 
 // Compresses a point on a weierstraß curve (0x02/0x03 + X)
 basalt_err_t wcurve_point_compress(
-    const wcurve_spec_t *curve,
+    const wcurve_spec_t *wcurve,
     uint8_t out[33],
     const wcurve_point_t *point
 );
 
 // Decompresses a point on a weierstraß curve using Fermat's little theorem
+// This function only works with secp256k1 and secp256r1 points.
 basalt_err_t wcurve_point_decompress(
-    const wcurve_spec_t *curve,
+    const wcurve_spec_t *wcurve,
     wcurve_point_t *point,
     const uint8_t input[33]
 );

@@ -28,7 +28,7 @@ extern "C" {
  */
 typedef struct {
     char word[BASALT_BIP39_MAX_WORD_LENGTH];
-} basalt_bip39_word_t;
+} basalt_keyder_word_t;
 
 /**
  * @brief Holds a SECRET BIP-39 mnemonic.
@@ -45,8 +45,8 @@ typedef struct {
  *              from all unauthorized access.
  */
 typedef struct {
-    basalt_bip39_word_t words[BASALT_BIP39_WORDS];
-} basalt_bip39_mnemonic_t;
+    basalt_keyder_word_t words[BASALT_BIP39_WORDS];
+} basalt_keyder_mnemonic_t;
 
 /**
  * @brief Generates 12 words from a given entropy.
@@ -72,7 +72,7 @@ typedef struct {
  *
  * @return      the error code, 0 otherwise
  */
-basalt_err_t basalt_bip39_generate_mnemonic(basalt_bip39_mnemonic_t *mnemonic, const uint8_t entropy[16]);
+basalt_err_t basalt_keyder_generate_mnemonic(basalt_keyder_mnemonic_t *mnemonic, const uint8_t entropy[16]);
 
 #ifdef __cplusplus
 }

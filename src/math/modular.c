@@ -2,7 +2,6 @@
 // Created by M Lunkeit on 17.07.26.
 //
 
-#include <stdio.h>
 #include <string.h>
 
 #include "modular.h"
