@@ -23,6 +23,8 @@ typedef enum {
     BASALT_ERR_INVALID_KEY = -0x11,
     BASALT_ERR_INVALID_SIGNATURE = -0x12,
     BASALT_ERR_DERIVED_KEY_TOO_LONG = -0x13,
+    BASALT_ERR_INVALID_CURVE = -0x14,
+    BASALT_ERR_DERIVATION_FAILED = -0x15,
 
     // System errors
 } basalt_err_t;

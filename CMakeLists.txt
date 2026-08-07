@@ -6,21 +6,24 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
 add_library(basalt STATIC
-        src/math/bigint.c
-        src/math/modular.c
-        src/math/barrett.c
-        src/crypto/hash/sha256.c
-        src/crypto/mac/hmac.c
-        src/crypto/ec/ecdsa.c
-        src/crypto/ec/rfc6979.c
-        src/math/curves/wcurve.c
         src/basalt_ecdsa.c
         src/basalt_hmac.c
         src/basalt_sha.c
+        src/math/bigint.c
+        src/math/modular.c
+        src/math/barrett.c
+        src/math/curves/wcurve.c
+        src/math/curves/wcurve_point.c
+        src/crypto/codec/base58.c
+        src/crypto/ec/ecdsa.c
+        src/crypto/ec/rfc6979.c
+        src/crypto/hash/sha256.c
         src/crypto/hash/sha512.c
         src/crypto/kdf/bip39.c
         src/crypto/kdf/pbkdf2.c
-        src/math/curves/wcurve_point.c
+        src/crypto/kdf/bip32.c
+        src/crypto/mac/hmac.c
+        src/utils/strutil.c
 )
 
 target_include_directories(basalt
@@ -46,7 +49,9 @@ add_executable(run_tests
         test/crypto/hash/sha512.c
         test/crypto/kdf/bip39.c
         test/crypto/kdf/pbkdf2.c
-        test/math/curves/wcurve_point.c)
+        test/math/curves/wcurve_point.c
+        test/crypto/codec/base58.c
+        test/utils/strutil.c)
 
 target_include_directories(run_tests
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src

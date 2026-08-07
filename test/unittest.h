@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <inttypes.h>
+#include <string.h>
 
 typedef uint8_t status_t;
 
