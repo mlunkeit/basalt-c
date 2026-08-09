@@ -32,8 +32,8 @@ int main() {
     RUN_TEST_SUITE(bip39, "BIP-39");
     RUN_TEST_SUITE(pbkdf2, "PBKDF2");
     RUN_TEST_SUITE(wcurve_point, "wcurve point functions");
-    RUN_TEST_SUITE(base58, "base58");
     RUN_TEST_SUITE(strutil, "string utilities");
+    RUN_TEST_SUITE(base58, "base58");
 
     printf("%s%ssuccess%s All test suites passed successfully!\n", COLOR_GREEN, COLOR_BOLD, COLOR_RESET);
 

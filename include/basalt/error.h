@@ -17,6 +17,7 @@ typedef enum {
     BASALT_ERR_UNSUPPORTED_CURVE = -0x02,
     BASALT_ERR_NULL_POINTER = -0x03,
     BASALT_ERR_INPUT_TOO_LONG = -0x04,
+    BASALT_ERR_INVALID_CHARACTER = -0x05,
 
     // Cryptographic / Mathematical errors
     BASALT_ERR_VERIFICATION_FAILED = -0x10,
@@ -27,6 +28,7 @@ typedef enum {
     BASALT_ERR_DERIVATION_FAILED = -0x15,
 
     // System errors
+    BASALT_ERR_OVERFLOW = -0x20,
 } basalt_err_t;
 
 #ifdef __cplusplus

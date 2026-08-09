@@ -7,10 +7,14 @@
 #include "basalt/error.h"
 #include "basalt/mem.h"
 #include "crypto/codec/base58.h"
+#include "math/bigint.h"
 #include "utils/strutil.h"
 
-static constexpr char BASE58_CHARS[59] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+static constexpr char base58_chars[59] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
+// mapping the ASCII indices to their value in base 58
+// if the character is not a valid base58 character, the
+// -1 will be placed.
 static constexpr int8_t b58digits_map[] = {
     -1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
     -1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
@@ -82,11 +86,11 @@ basalt_err_t base58_encode(char *out, const uint8_t *in, size_t len) {
         uint8_t remainder;
         len = div58(p, &remainder, p, len);
 
-        *out++ = BASE58_CHARS[remainder];
+        *out++ = base58_chars[remainder];
     }
 
     for (; leading_zeros > 0; leading_zeros--) {
-        *out++ = *BASE58_CHARS;
+        *out++ = *base58_chars;
     }
 
     *out = '\0';
@@ -95,10 +99,76 @@ basalt_err_t base58_encode(char *out, const uint8_t *in, size_t len) {
     return BASALT_OK;
 }
 
-size_t mul58(uint8_t *product, const uint8_t *in, size_t len) {
-    
-}
+basalt_err_t base58_decode(uint8_t *out, size_t *written, const char *in) {
+    if (!out || !in || !written) {
+        return BASALT_ERR_NULL_POINTER;
+    }
 
-basalt_err_t base58_decode(uint8_t *out, const char *in) {
+    static constexpr uint32_t base = 58;
 
+    const uint8_t *beginning = out;
+
+    // skip all leading zeros and just write zeros into the output
+    for (; *in == *base58_chars; in++) {
+        *out++ = 0x00;
+    }
+
+    const size_t len_str = strlen(in);
+
+    // creating the bigint accumulator that will
+    // store the numeric value of the base58 string
+    const size_t len_acc = (len_str + 3) / 4;
+    uint32_t acc[len_acc];
+    memset(acc, 0, len_acc * sizeof(uint32_t));
+
+    // iterating through the input string until
+    // the null terminator
+    for (; *in != '\0'; in++) {
+        // find the corresponding value to the base58 character
+        const int8_t value = b58digits_map[(size_t) *in];
+
+        // value can not be less than zero. if it is,
+        // the character is not a valid base58 char.
+        if (value < 0) {
+            return BASALT_ERR_INVALID_CHARACTER;
+        }
+
+        const uint32_t final_value = (uint32_t) value;
+
+        // multiplying and adding.
+        // acc <- 58 * acc + char
+        bigint_mul_raw(acc, acc, len_acc, &base, 1);
+        bigint_add_raw(acc, acc, len_acc, &final_value, 1);
+    }
+
+    // converting the accumulator bigint into a byte array
+    size_t len_buf = len_acc * 4;
+    uint8_t buf[len_buf];
+    memset(buf, 0, len_buf);
+    bigint_to_bytes(buf, acc, len_acc);
+
+    // current reading address from buffer starting from index 0
+    const uint8_t *p = buf;
+
+    // skipping all leading zeros
+    for (; *p == 0 && len_buf > 0; p++) {
+        len_buf--;
+    }
+
+    // writing the rest into the output buffer
+    for (; len_buf > 0; len_buf--) {
+        *out++ = *p++;
+    }
+
+    // calculating the written length
+    const ptrdiff_t diff = out - beginning;
+
+    // difference can not be negative
+    if (diff < 0) {
+        return BASALT_ERR_OVERFLOW;
+    }
+
+    *written = (size_t) diff;
+
+    return BASALT_OK;
 }

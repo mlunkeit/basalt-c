@@ -22,7 +22,7 @@ DEFINE_TEST(div58_simple)
 END_TEST
 
 DEFINE_TEST(encode_base58)
-    constexpr uint8_t raw_data[] = "my name is retep and i am evil";
+    static constexpr uint8_t raw_data[] = "my name is retep and i am evil";
 
     char out[100];
     base58_encode(out, raw_data, strlen((const char*) raw_data));
@@ -38,11 +38,26 @@ DEFINE_TEST(encode_base58_padding)
     char out[100];
     base58_encode(out, raw_data, 4);
 
-    printf("\nresult = %s\n", out);
+    static constexpr char expected[] = "1115Q";
+
+    ASSERT_STR_EQ(out, expected);
+END_TEST
+
+DEFINE_TEST(decode_base58)
+    static constexpr char input[] = "NwFuhTR7rE9hhyqqEo4k3rbo8iQDrtzazWh2xR8vX";
+
+    uint8_t out[100] = {0};
+    size_t written;
+    base58_decode(out, &written, input);
+
+    static constexpr char expected[] = "my name is retep and i am evil";
+
+    ASSERT_STR_EQ((char*) out, expected);
 END_TEST
 
 DEFINE_TEST_SUITE(base58)
     RUN_TEST(div58_simple, "simple dividing by 58");
     RUN_TEST(encode_base58, "encode base58");
     RUN_TEST(encode_base58_padding, "encode base58 padding");
+    RUN_TEST(decode_base58, "decode base58");
 END_TEST_SUITE
