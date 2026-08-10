@@ -51,7 +51,8 @@ add_executable(run_tests
         test/crypto/kdf/pbkdf2.c
         test/math/curves/wcurve_point.c
         test/crypto/codec/base58.c
-        test/utils/strutil.c)
+        test/utils/strutil.c
+        test/crypto/kdf/bip32.c)
 
 target_include_directories(run_tests
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src

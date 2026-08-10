@@ -8,13 +8,14 @@
 #include "basalt/error.h"
 #include "math/bigint.h"
 #include "math/modular.h"
+#include "math/curves/wcurve_point.h"
 #include "crypto/kdf/bip32.h"
 #include "crypto/mac/hmac.h"
 
 basalt_err_t bip32_derive_private(
     const wcurve_spec_t *wcurve,
-    extended_private_key_t *child,
-    const extended_private_key_t *parent,
+    bip32_extended_private_key_t *child,
+    const bip32_extended_private_key_t *parent,
     const uint32_t index)
 {
     if (!wcurve || !child || !parent) {
@@ -55,12 +56,11 @@ basalt_err_t bip32_derive_private(
 
         // 2 * 4 * limbs of coordinate  + 4 bytes
         // = 8 * 8                      + 4 bytes
-        uint8_t buf[68];
-        bigint_to_bytes(buf, point.x, 8);
-        bigint_to_bytes(buf + 32, point.y, 8);
-        bigint_to_bytes(buf + 64, &index, 1);
+        uint8_t buf[37];
+        wcurve_point_compress(wcurve, buf, &point);
+        bigint_to_bytes(buf + 33, &index, 1);
 
-        hmac_sha512(I, parent->c, BIP32_KEY_EXTENSION_BYTES, buf, 68);
+        hmac_sha512(I, parent->c, BIP32_KEY_EXTENSION_BYTES, buf, 37);
     }
 
     // Split I into two 32-byte sequences, I_L and I_R.
@@ -90,8 +90,8 @@ basalt_err_t bip32_derive_private(
 
 basalt_err_t bip32_derive_public(
     const wcurve_spec_t *wcurve,
-    extended_public_key_t *child,
-    const extended_public_key_t *parent,
+    bip32_extended_public_key_t *child,
+    const bip32_extended_public_key_t *parent,
     const uint32_t index)
 {
     if (!wcurve || !child || !parent) {
@@ -111,14 +111,13 @@ basalt_err_t bip32_derive_public(
     }
 
     // If not (normal child): let I = HMAC-SHA512(Key = c_par, Data = ser_P(K_par) || ser_32(i)).
-    uint8_t buf[68];
-    bigint_to_bytes(buf, parent->K.x, 8);
-    bigint_to_bytes(buf + 32, parent->K.y, 8);
-    bigint_to_bytes(buf + 64, &index, 1);
+    uint8_t buf[37];
+    wcurve_point_compress(wcurve, buf, &child->K);
+    bigint_to_bytes(buf + 33, &index, 1);
 
     // Split I into two 32-byte sequences, I_L and I_R.
     uint8_t I[64];
-    hmac_sha512(I, parent->c, BIP32_KEY_EXTENSION_BYTES, buf, 68);
+    hmac_sha512(I, parent->c, BIP32_KEY_EXTENSION_BYTES, buf, 37);
 
     const uint8_t *I_L = I;
     const uint8_t *I_R = I + 32;

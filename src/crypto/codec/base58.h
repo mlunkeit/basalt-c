@@ -14,7 +14,7 @@
 basalt_err_t base58_encode(char *out, const uint8_t *in, size_t len);
 
 // Converts a null terminated base-58 string into a byte array
-// Outputs the length of bytes
+// Writes the amount of bytes written into the referenced integer
 basalt_err_t base58_decode(uint8_t *out, size_t *written, const char *in);
 
 #endif //BASALT_BASE58_H

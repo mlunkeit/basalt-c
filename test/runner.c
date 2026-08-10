@@ -17,10 +17,9 @@ INCLUDE_TEST_SUITE(pbkdf2)
 INCLUDE_TEST_SUITE(wcurve_point)
 INCLUDE_TEST_SUITE(base58)
 INCLUDE_TEST_SUITE(strutil)
+INCLUDE_TEST_SUITE(bip32)
 
 int main() {
-    setbuf(stdout, nullptr);
-
     RUN_TEST_SUITE(bigint, "big integer arithmetic");
     RUN_TEST_SUITE(modular, "modular arithmetic");
     RUN_TEST_SUITE(barrett, "barrett reduction");
@@ -34,6 +33,7 @@ int main() {
     RUN_TEST_SUITE(wcurve_point, "wcurve point functions");
     RUN_TEST_SUITE(strutil, "string utilities");
     RUN_TEST_SUITE(base58, "base58");
+    RUN_TEST_SUITE(bip32, "BIP-32");
 
     printf("%s%ssuccess%s All test suites passed successfully!\n", COLOR_GREEN, COLOR_BOLD, COLOR_RESET);
 
