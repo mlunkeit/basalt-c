@@ -47,4 +47,28 @@ basalt_err_t bip32_derive_public(
     uint32_t index
 );
 
+// BIP-32:
+// The next step is cascading several CKD constructions to build a tree.
+// We start with one root, the master extended key m.
+// By evaluating CKDpriv(m,i) for several values of i, we get a number of level-1 derived nodes.
+// As each of these is again an extended key, CKDpriv can be applied to those as well.
+
+// Building the private key tree
+basalt_err_t bip32_derive_private_from_path(
+    const wcurve_spec_t *wcurve,
+    bip32_extended_private_key_t *child,
+    const bip32_extended_private_key_t *parent,
+    const uint32_t *path,
+    size_t len_path
+);
+
+// Building the public key tree
+basalt_err_t bip32_derive_public_from_path(
+    const wcurve_spec_t *wcurve,
+    bip32_extended_public_key_t *child,
+    const bip32_extended_public_key_t *parent,
+    const uint32_t *path,
+    size_t len_path
+);
+
 #endif //BASALT_BIP32_H

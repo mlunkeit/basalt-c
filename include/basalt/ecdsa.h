@@ -8,11 +8,12 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "basalt/error.h"
+#include "basalt/ec.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "basalt/error.h"
 
 #define BASALT_ECDSA_MAX_BYTES 32
 
@@ -39,59 +40,6 @@ typedef struct {
     uint8_t r[BASALT_ECDSA_MAX_BYTES];
     uint8_t s[BASALT_ECDSA_MAX_BYTES];
 } basalt_ecdsa_signature_t;
-
-/**
- * @brief Holds an ECDSA private key.
- *
- * This private key can be used to create ECDSA signatures.
- *
- * It only consists of one number (d) which is represented in
- * a big endian byte array. d has to be less than the order of the
- * curve on which the signature is created an greater than zero
- * as it will be used for point multiplication.
- *
- * Please note that d * G = P where G is the generator point of
- * the curve used and P is the public key bound to this private key.
- *
- * @warning     This private key has to be kept – as the name suggests –
- *              strictly private as anyone with this key can create
- *              signatures in the name of the owner of this key.
- */
-typedef struct {
-    uint8_t d[BASALT_ECDSA_MAX_BYTES];
-} basalt_ecdsa_private_key_t;
-
-/**
- * @brief Holds an ECDSA public key.
- *
- * This public key can be used to verify ECDSA signatures.
- *
- * It consists of an x- and y-coordinate. It has to be a point on
- * the elliptic curve used. Both coordinates must be greater than
- * zero and less than the field characteristic of the curve used.
- * (NOT THE ORDER!)
- * These coordinates are represented as byte arrays in big endian.
- */
-typedef struct {
-    uint8_t x[BASALT_ECDSA_MAX_BYTES];
-    uint8_t y[BASALT_ECDSA_MAX_BYTES];
-} basalt_ecdsa_public_key_t;
-
-/**
- * @brief The list of supported elliptic curves.
- *
- * Please note that only these curves are supported by this library
- * by now. Due to the usage of RFC-6979 with HMAC-SHA-256 it is
- * not safe to use curves greater than 256-bit. It is possible,
- * but not recommended.
- *
- * Furthermore, the current ECDSA implementation only allows
- * curves in the Weierstraß form.
- */
-typedef enum {
-    BASALT_CURVE_SECP256K1 = 0,
-    BASALT_CURVE_SECP256R1 = 1,
-} basalt_ecdsa_curve_t;
 
 /**
  * @brief Creates a deterministic ECDSA signature according to RFC-6979.
@@ -128,9 +76,9 @@ typedef enum {
  * @return              the error code, 0 otherwise
  */
 basalt_err_t basalt_ecdsa_sign(
-    basalt_ecdsa_curve_t curve,
+    basalt_ec_curve_t curve,
     basalt_ecdsa_signature_t *sig,
-    const basalt_ecdsa_private_key_t *key,
+    const basalt_ec_private_key_t *key,
     const uint8_t *hash, size_t len_hash);
 
 /**
@@ -149,8 +97,8 @@ basalt_err_t basalt_ecdsa_sign(
  *                      and no error occurred.
  */
 basalt_err_t basalt_ecdsa_verify(
-    basalt_ecdsa_curve_t curve,
-    const basalt_ecdsa_public_key_t *key,
+    basalt_ec_curve_t curve,
+    const basalt_ec_public_key_t *key,
     const uint8_t *hash, size_t len_hash,
     const basalt_ecdsa_signature_t *sig);
 

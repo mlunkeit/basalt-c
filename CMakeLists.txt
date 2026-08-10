@@ -9,6 +9,7 @@ add_library(basalt STATIC
         src/basalt_ecdsa.c
         src/basalt_hmac.c
         src/basalt_sha.c
+        src/basalt_ec.c
         src/math/bigint.c
         src/math/modular.c
         src/math/barrett.c
@@ -24,6 +25,7 @@ add_library(basalt STATIC
         src/crypto/kdf/bip32.c
         src/crypto/mac/hmac.c
         src/utils/strutil.c
+        src/basalt_keyder.c
 )
 
 target_include_directories(basalt

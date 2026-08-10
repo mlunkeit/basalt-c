@@ -4,17 +4,16 @@
 
 #include "basalt/ecdsa.h"
 
+#include "basalt_ec.h"
 #include "crypto/ec/ecdsa.h"
 #include "math/bigint.h"
 #include "math/curves/wcurve.h"
-#include "math/curves/secp256k1.h"
-#include "math/curves/secp256r1.h"
 
 basalt_err_t basalt_ecdsa_sign(
-    const basalt_ecdsa_curve_t curve,
+    const basalt_ec_curve_t curve,
     basalt_ecdsa_signature_t *sig,
-    const basalt_ecdsa_private_key_t *key,
-    const uint8_t *hash, size_t len_hash)
+    const basalt_ec_private_key_t *key,
+    const uint8_t *hash, const size_t len_hash)
 {
     if (!sig || !key || !hash) {
         return BASALT_ERR_NULL_POINTER;
@@ -22,20 +21,9 @@ basalt_err_t basalt_ecdsa_sign(
 
     const wcurve_spec_t *wcurve;
 
-    switch (curve) {
-        case BASALT_CURVE_SECP256K1:
-            wcurve = &SECP256K1;
-            break;
-        case BASALT_CURVE_SECP256R1:
-            wcurve = &SECP256R1;
-            break;
-        default:
-            wcurve = nullptr;
-            break;
-    }
-
-    if (!wcurve) {
-        return BASALT_ERR_UNSUPPORTED_CURVE;
+    const basalt_err_t status = find_wcurve(&wcurve, curve);
+    if (status != BASALT_OK) {
+        return status;
     }
 
     uint32_t d[wcurve->len_n];
@@ -47,6 +35,39 @@ basalt_err_t basalt_ecdsa_sign(
 
     bigint_to_bytes(sig->r, r, wcurve->len_n);
     bigint_to_bytes(sig->s, s, wcurve->len_n);
+
+    return BASALT_OK;
+}
+
+basalt_err_t basalt_ecdsa_verify(
+    const basalt_ec_curve_t curve,
+    const basalt_ec_public_key_t *key,
+    const uint8_t *hash, const size_t len_hash,
+    const basalt_ecdsa_signature_t *sig)
+{
+    if (!curve || !key || !hash || !sig) {
+        return BASALT_ERR_NULL_POINTER;
+    }
+
+    const wcurve_spec_t *wcurve;
+
+    const basalt_err_t status = find_wcurve(&wcurve, curve);
+    if (status != BASALT_OK) {
+        return status;
+    }
+
+    wcurve_point_t point;
+    bytes_to_bigint(point.x, key->x, wcurve->len_p * 4);
+    bytes_to_bigint(point.y, key->y, wcurve->len_p * 4);
+
+    uint32_t r[wcurve->len_n];
+    uint32_t s[wcurve->len_n];
+    bytes_to_bigint(r, sig->r, wcurve->len_n * 4);
+    bytes_to_bigint(s, sig->s, wcurve->len_n * 4);
+
+    if (!ecdsa_verify(wcurve, &point, hash, len_hash, r, s)) {
+        return BASALT_ERR_INVALID_SIGNATURE;
+    }
 
     return BASALT_OK;
 }
