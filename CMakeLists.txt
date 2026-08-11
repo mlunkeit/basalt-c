@@ -26,6 +26,7 @@ add_library(basalt STATIC
         src/crypto/mac/hmac.c
         src/utils/strutil.c
         src/basalt_keyder.c
+        src/crypto/hash/ripemd160.c
 )
 
 target_include_directories(basalt
