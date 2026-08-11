@@ -25,7 +25,7 @@ typedef struct {
 } basalt_keyder_extended_private_key_t;
 
 typedef struct {
-    basalt_ec_compressed_public_key_t key;
+    basalt_ec_public_key_t key;
     uint8_t c[BASALT_BIP32_KEY_BYTES];
 } basalt_keyder_extended_public_key_t;
 
@@ -57,9 +57,37 @@ typedef struct {
  */
 basalt_err_t basalt_keyder_generate_mnemonic(char *mnemonic, const uint8_t entropy[BASALT_BIP39_ENTROPY_BYTES]);
 
+/**
+ * @brief Derives a 512 bit seed from a given mnemonic and passphrase.
+ *
+ * This function uses the BIP-39 standard to derive the seed from the mnemonic
+ * with the PBKDF2 function which uses HMAC-SHA-512.
+ *
+ * @param[out]  seed        the generated seed
+ * @param[in]   mnemonic    the 12, 18 or 24 word mnemonic as null-terminated string
+ * @param[in]   passphrase  a custom passphrase, chosen by the user as null-terminated string
+ *
+ * @return      the error code, 0 otherwise
+ */
 basalt_err_t basalt_keyder_derive_seed(uint8_t seed[BASALT_BIP39_SEED_BYTES], const char *mnemonic, const char *passphrase);
 
-basalt_err_t basalt_keyder_derive_root(basalt_keyder_extended_private_key_t *root, const uint8_t seed[BASALT_BIP39_SEED_BYTES]);
+/**
+ * @brief Derives the root private key from a 512 bit seed.
+ *
+ * This function uses the BIP-32 standard to derive the root extended
+ * private key from a given seed.
+ *
+ * @param[in]   curve       the curve to derive the key for
+ * @param[out]  master      the generated root private key
+ * @param[in]   seed        the 512 bit seed
+ *
+ * @return      the error code, 0 otherwise
+ */
+basalt_err_t basalt_keyder_derive_master(
+    basalt_ec_curve_t curve,
+    basalt_keyder_extended_private_key_t *master,
+    const uint8_t seed[BASALT_BIP39_SEED_BYTES]
+);
 
 /**
  * @brief Derives a private extended child key from a private extended parent key.
@@ -70,6 +98,7 @@ basalt_err_t basalt_keyder_derive_root(basalt_keyder_extended_private_key_t *roo
  * a 512 bit parent "extended" key and outputs a 512 bit child "extended" key.
  * The chain code ("extension") is necessary to derive further public and private keys.
  *
+ * @param[in]   curve       the curve to derive the key for
  * @param[out]  child       a pointer to the derived extended child key
  * @param[in]   parent      a pointer to the extended parent key
  * @param[in]   path        the derivation path
@@ -78,6 +107,7 @@ basalt_err_t basalt_keyder_derive_root(basalt_keyder_extended_private_key_t *roo
  * @return      the error code, 0 otherwise
  */
 basalt_err_t basalt_keyder_derive_private(
+    basalt_ec_curve_t curve,
     basalt_keyder_extended_private_key_t *child,
     const basalt_keyder_extended_private_key_t *parent,
     const uint32_t *path, size_t len_path
@@ -95,6 +125,7 @@ basalt_err_t basalt_keyder_derive_private(
  * Furthermore, it is NOT possible to derive hardened keys. This means that every
  * path element must be smaller than 2^31.
  *
+ * @param[in]   curve       the curve to derive the key for
  * @param[out]  child       a pointer to the derived extended child key
  * @param[in]   parent      a pointer to the extended parent key
  * @param[in]   path        the derivation path
@@ -103,6 +134,7 @@ basalt_err_t basalt_keyder_derive_private(
  * @return      the error code, 0 otherwise
  */
 basalt_err_t basalt_keyder_derive_public(
+    basalt_ec_curve_t curve,
     basalt_keyder_extended_public_key_t *child,
     const basalt_keyder_extended_public_key_t *parent,
     const uint32_t *path, size_t len_path

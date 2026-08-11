@@ -6,6 +6,7 @@
 #define BASALT_BIP32_H
 
 #include "basalt/error.h"
+#include "crypto/kdf/bip39.h"
 #include "math/curves/wcurve.h"
 
 #define BIP32_KEY_EXTENSION_BYTES 32
@@ -69,6 +70,16 @@ basalt_err_t bip32_derive_public_from_path(
     const bip32_extended_public_key_t *parent,
     const uint32_t *path,
     size_t len_path
+);
+
+// BIP-32:
+// The total number of possible extended keypairs is almost 2512, but the produced keys are only 256 bits long,
+// and offer about half of that in terms of security. Therefore, master keys are not generated directly,
+// but instead from a potentially short seed value.
+basalt_err_t bip32_derive_master(
+    const wcurve_spec_t *wcurve,
+    bip32_extended_private_key_t *master,
+    const uint8_t seed[BIP39_SEED_BYTES]
 );
 
 #endif //BASALT_BIP32_H

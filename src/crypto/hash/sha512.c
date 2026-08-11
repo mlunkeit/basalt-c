@@ -4,6 +4,7 @@
 
 #include <string.h>
 
+#include "basalt/mem.h"
 #include "crypto/hash/sha512.h"
 
 #define SHR(n, x) ((x) >> (n))
@@ -74,6 +75,8 @@ size_t sha512_pad(uint64_t *output, const uint8_t *input, const size_t len) {
             | ((uint64_t) buf[i * 8 + 7]);
     }
 
+    basalt_memzero(buf, blocks * 128);
+
     return blocks;
 }
 
@@ -126,6 +129,8 @@ void sha512(uint8_t output[64], const uint8_t *input, size_t len) {
         H[6] += g;
         H[7] += h;
     }
+
+    basalt_memzero(buf, blocks * 16);
 
     for (size_t i = 0; i < 8; i++) {
         output[i * 8] = H[i] >> 56;

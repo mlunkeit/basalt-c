@@ -2,13 +2,14 @@
 // Created by M Lunkeit on 24.07.26.
 //
 
+#include <string.h>
+
 #include "math/bigint.h"
 #include "math/barrett.h"
 #include "math/modular.h"
 #include "crypto/ec/rfc6979.h"
 #include "crypto/ec/ecdsa.h"
-
-#include <string.h>
+#include "basalt/mem.h"
 
 void ecdsa_sign(
     const wcurve_spec_t *wcurve,
@@ -38,6 +39,9 @@ void ecdsa_sign(
 
     uint32_t dividend[wcurve->len_n];
     modular_add_raw(&mod_ctx, dividend, h, wcurve->len_n, dr, wcurve->len_n);
+
+    // clearing sensible data from memory
+    basalt_memzero(dr, wcurve->len_n * sizeof(uint32_t));
 
     barrett_inv(&bar_ctx, k, k);
 

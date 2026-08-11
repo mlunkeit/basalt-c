@@ -4,10 +4,11 @@
 
 #include <string.h>
 
-#include "../bigint.h"
-#include "../modular.h"
-#include "../barrett.h"
-#include "wcurve.h"
+#include "basalt/mem.h"
+#include "math/bigint.h"
+#include "math/modular.h"
+#include "math/barrett.h"
+#include "math/curves/wcurve.h"
 
 void wcurve_point_add(
     const wcurve_spec_t *wcurve,
@@ -249,6 +250,9 @@ void wcurve_point_jacobian_scale(
     }
 
     memcpy(result, &acc, sizeof(wcurve_point_jacobian_t));
+
+    // clear sensible data from memory
+    basalt_memzero(scalar, sizeof(uint32_t) * wcurve->len_n);
 }
 
 void wcurve_point_affin_to_jacobian(

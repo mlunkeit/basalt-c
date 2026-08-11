@@ -4,7 +4,8 @@
 
 #include <string.h>
 
-#include "sha256.h"
+#include "basalt/mem.h"
+#include "crypto/hash/sha256.h"
 
 #define SHR(n, x) ((x) >> (n))
 #define ROTR(n, x) (((x) >> (n)) | ((x) << (32 - (n))))
@@ -52,6 +53,8 @@ size_t sha256_pad(uint32_t *output, const uint8_t *input, const size_t len) {
             | (buf[i * 4 + 2] << 8)
             | (buf[i * 4 + 3]));
     }
+
+    basalt_memzero(buf, blocks * 64);
 
     return blocks;
 }
@@ -106,6 +109,8 @@ void sha256(uint8_t output[32], const uint8_t *input, const size_t len) {
         H[6] += g;
         H[7] += h;
     }
+
+    basalt_memzero(buf, blocks * 16);
 
     for (size_t i = 0; i < 8; i++) {
         output[i * 4 + 0] = H[i] >> 24;

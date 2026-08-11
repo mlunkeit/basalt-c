@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "basalt/error.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -82,6 +84,54 @@ typedef enum {
     BASALT_CURVE_SECP256K1 = 0,
     BASALT_CURVE_SECP256R1 = 1,
 } basalt_ec_curve_t;
+
+/**
+ * @brief Compresses a public key on an elliptic curve.
+ *
+ * This function removes the entire y-coordinate from a point on the
+ * elliptic curve and just stores the information if the y-coordinate
+ * was odd or even. This and the x-coordinate are enough information
+ * to restore the complete x-y-coordinate pair.
+ *
+ * Please note that this only works with curves that have an odd
+ * field characteristic. But this is the case for all curves that
+ * use a prime characteristic, because all primes are odd. (except 2)
+ *
+ * @param[in]   curve           the curve to compress the key on
+ * @param[out]  compressed      the compressed public key
+ * @param[in]   decompressed    the raw public key
+ *
+ * @return the error code, 0 otherwise
+ */
+basalt_err_t basalt_ec_compress_public_key(
+    basalt_ec_curve_t curve,
+    basalt_ec_compressed_public_key_t *compressed,
+    const basalt_ec_public_key_t *decompressed
+);
+
+/**
+ * @brief Decompresses a public key on an elliptic curve.
+ *
+ * This function restores the y-coordinate from a point on the
+ * elliptic curve where just the information if the point is odd
+ * or even is given. This function uses Fermat's Little Theorem
+ * to quickly calculate the square root.
+ *
+ * @warning Therefore the following criteria must be met for the
+ *          field characteristic p for this function to work:
+ *          p mod 4 = 3
+ *
+ * @param[in]   curve           the curve to decompress the key on
+ * @param[out]  decompressed    the raw public key
+ * @param[in]   compressed      the compressed public key
+ *
+ * @return the error code, 0 otherwise
+ */
+basalt_err_t basalt_ec_decompress_public_key(
+    basalt_ec_curve_t curve,
+    basalt_ec_public_key_t *decompressed,
+    const basalt_ec_compressed_public_key_t *compressed
+);
 
 #ifdef __cplusplus
 }

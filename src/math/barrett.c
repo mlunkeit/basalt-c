@@ -4,8 +4,9 @@
 
 #include <string.h>
 
-#include "barrett.h"
-#include "bigint.h"
+#include "basalt/mem.h"
+#include "math/barrett.h"
+#include "math/bigint.h"
 
 void barrett_reduce(
     const barrett_ctx *ctx,
@@ -48,6 +49,9 @@ void barrett_mul(const barrett_ctx *ctx, uint32_t *result, const uint32_t *a, co
     memset(buf, 0, 2 * ctx->k * sizeof(uint32_t));
     bigint_mul_raw(buf, a, ctx->k, b, ctx->k);
     barrett_reduce(ctx, result, buf);
+
+    // clear sensible data from memory
+    basalt_memzero(buf, 2 * ctx->k);
 }
 
 void barrett_pow(const barrett_ctx *ctx, uint32_t *result, const uint32_t *a, const uint32_t *b) {

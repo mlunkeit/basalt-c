@@ -23,7 +23,7 @@ basalt_err_t bip32_derive_private(
     }
 
     if (wcurve->len_p != 8 || wcurve->len_n != 8) {
-        return BASALT_ERR_INVALID_CURVE;
+        return BASALT_ERR_UNSUPPORTED_CURVE;
     }
 
     // Check whether i ≥ 2^31 (whether the child is a hardened key).
@@ -97,7 +97,7 @@ basalt_err_t bip32_derive_public(
     }
 
     if (wcurve->len_p != 8 || wcurve->len_n != 8) {
-        return BASALT_ERR_INVALID_CURVE;
+        return BASALT_ERR_UNSUPPORTED_CURVE;
     }
 
     static constexpr uint32_t hardened_mask = (uint32_t) 1 << 31;
@@ -195,6 +195,47 @@ basalt_err_t bip32_derive_public_from_path(
     }
 
     memcpy(child, &temp, sizeof(bip32_extended_public_key_t));
+
+    return BASALT_OK;
+}
+
+basalt_err_t bip32_derive_master(
+    const wcurve_spec_t *wcurve,
+    bip32_extended_private_key_t *master,
+    const uint8_t seed[BIP39_SEED_BYTES])
+{
+    if (!wcurve || !master || !seed) {
+        return BASALT_ERR_NULL_POINTER;
+    }
+
+    if (wcurve->len_n != 8 || wcurve->len_p != 8) {
+        return BASALT_ERR_UNSUPPORTED_CURVE;
+    }
+
+    // Calculate I = HMAC-SHA512(Key = "Bitcoin seed", Data = S)
+    // length is 13 including null terminator
+    static constexpr uint8_t key[13] = "Bitcoin seed";
+
+    uint8_t I[64];
+    // using only 12 bytes (excluding the null terminator)
+    hmac_sha512(I, key, 12, seed, BIP39_SEED_BYTES);
+
+    // Split I into two 32-byte sequences, I_L and I_R.
+    const uint8_t *I_L = I;
+    const uint8_t *I_R = I + 32;
+
+    // Use parse_256(I_L) as master secret key, and I_R as master chain code.
+    bytes_to_bigint(master->k, I_L, 32);
+    memcpy(master->c, I_R, 32 * sizeof(uint8_t));
+
+    // In case parse_256(I_L) is 0 or parse_256(I_L) ≥ n, the master key is invalid.
+    if (bigint_cmp_raw(master->k, 8, wcurve->n, 8) >= 0) {
+        return BASALT_ERR_DERIVATION_FAILED;
+    }
+
+    if (bigint_cmp_raw(master->k, 8, nullptr, 0) == 0) {
+        return BASALT_ERR_DERIVATION_FAILED;
+    }
 
     return BASALT_OK;
 }

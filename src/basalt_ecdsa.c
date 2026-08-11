@@ -3,6 +3,7 @@
 //
 
 #include "basalt/ecdsa.h"
+#include "basalt/mem.h"
 
 #include "basalt_ec.h"
 #include "crypto/ec/ecdsa.h"
@@ -35,6 +36,9 @@ basalt_err_t basalt_ecdsa_sign(
 
     bigint_to_bytes(sig->r, r, wcurve->len_n);
     bigint_to_bytes(sig->s, s, wcurve->len_n);
+
+    // clearing the private key from memory
+    basalt_memzero(d, wcurve->len_n * sizeof(uint32_t));
 
     return BASALT_OK;
 }

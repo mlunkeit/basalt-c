@@ -4,6 +4,7 @@
 
 #include <string.h>
 
+#include "basalt/mem.h"
 #include "crypto/mac/hmac.h"
 #include "crypto/ec/rfc6979.h"
 #include "math/bigint.h"
@@ -42,6 +43,10 @@ void rfc6979(
     memcpy(buf + 33, privkey, len_privkey * sizeof(uint8_t));
     memcpy(buf + len_privkey + 33, hash, len_hash * sizeof(uint8_t));
     hmac_sha256(K, K, 32, buf, len_privkey + len_hash + 33);
+
+    // clear sensible data from memory
+    basalt_memzero(privkey, len_privkey);
+    basalt_memzero(buf, 2 * len_hash + len_privkey + 1);
 
     // V = HMAC_K(V)
     hmac_sha256(V, K, 32, V, 32);

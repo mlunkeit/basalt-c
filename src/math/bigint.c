@@ -4,7 +4,8 @@
 
 #include <string.h>
 
-#include "bigint.h"
+#include "basalt/mem.h"
+#include "math/bigint.h"
 
 void bigint_add_raw(uint32_t *result, const uint32_t *a, const size_t len_a, const uint32_t *b, const size_t len_b) {
     size_t max_len;
@@ -82,6 +83,9 @@ void bigint_mul_raw(uint32_t *result, const uint32_t *a, const size_t len_a, con
     }
 
     memcpy(result, buf, (len_a + len_b) * sizeof(uint32_t));
+
+    // clear sensible data from memory
+    basalt_memzero(buf, (len_a + len_b) * sizeof(uint32_t));
 }
 
 void bigint_shl_raw(uint32_t *result, const uint32_t *a, const size_t len_a, size_t bits) {
