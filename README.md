@@ -11,15 +11,18 @@
 ## 🛠️ Features & Current Status
 
 * **SHA-256, SHA-512:** Fully standard-compliant (FIPS PUB 180-4) implementation.
+* **RIPEMD-160:** Functioning implementation 
 * **Arbitrary-Precision Arithmetic (BigInt):** Basic 256-bit+ integer arithmetic (Addition, Subtraction, Multiplication).
 * **Modular Arithmetic & Reduction:** Optimized Barrett reduction for fast modular operations.
 * **Elliptic Curve Arithmetic (`secp256k1, secp256r1`):** Point addition, point doubling, and scalar multiplication ($k \cdot P$) using jacobian coordinates.
 * **RFC 6979:** Deterministic Nonce Generation with HMAC-SHA256
 * **ECDSA:** Signing and verification
 * **PBKDF2:** RFC-2898 compliant password-based key derivation
+* **BIP-32 & BIP-39:** Standard-compliant mnemonic generator and key derivation function
+* **Base58:** Conversion from bytes to base58 and back.
 
 ### 🚧 Roadmap
-* [ ] **ECDSA:** Key generation (SEC1 33-byte compressed format)
+* [ ] **Key serialization and deserialization:** Working with `xpub` and `xprv` formatted keys
 * [ ] **Schnorr / BIP-340:** X-only public keys (32 bytes) & Schnorr signatures for Bitcoin/Taproot
 
 ---
