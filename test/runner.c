@@ -18,6 +18,7 @@ INCLUDE_TEST_SUITE(wcurve_point)
 INCLUDE_TEST_SUITE(base58)
 INCLUDE_TEST_SUITE(strutil)
 INCLUDE_TEST_SUITE(bip32)
+INCLUDE_TEST_SUITE(ripemd160)
 
 int main() {
     RUN_TEST_SUITE(bigint, "big integer arithmetic");
@@ -34,6 +35,7 @@ int main() {
     RUN_TEST_SUITE(strutil, "string utilities");
     RUN_TEST_SUITE(base58, "base58");
     RUN_TEST_SUITE(bip32, "BIP-32");
+    RUN_TEST_SUITE(ripemd160, "RIPEMD-160");
 
     printf("%s%ssuccess%s All test suites passed successfully!\n", COLOR_GREEN, COLOR_BOLD, COLOR_RESET);
 
