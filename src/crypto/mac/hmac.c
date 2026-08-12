@@ -4,7 +4,8 @@
 
 #include <string.h>
 
-#include "hmac.h"
+#include "basalt/mem.h"
+#include "crypto/mac/hmac.h"
 #include "crypto/hash/sha256.h"
 #include "crypto/hash/sha512.h"
 
@@ -42,6 +43,8 @@ void hmac_sha256(uint8_t output[32], const uint8_t *key, const size_t len_key, c
 
     // output = SHA256((K0 XOR OPAD) || SHA256((K0 XOR IPAD) || message)) = SHA256(outer_msg_buf)
     sha256(output, outer_msg_buf, 96);
+
+    basalt_memzero(K0, 64);
 }
 
 void hmac_sha512(uint8_t output[64], const uint8_t *key, const size_t len_key, const uint8_t *message, const size_t len_message) {
@@ -75,4 +78,6 @@ void hmac_sha512(uint8_t output[64], const uint8_t *key, const size_t len_key, c
 
     // output = SHA512((K0 XOR OPAD) || SHA512((K0 XOR IPAD) || message)) = SHA512(outer_msg_buf)
     sha512(output, outer_msg_buf, 192);
+
+    basalt_memzero(K0, 128);
 }

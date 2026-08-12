@@ -8,7 +8,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 add_library(basalt STATIC
         src/basalt_ecdsa.c
         src/basalt_hmac.c
-        src/basalt_sha.c
+        src/basalt_hash.c
         src/basalt_ec.c
         src/math/bigint.c
         src/math/modular.c

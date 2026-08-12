@@ -2,10 +2,11 @@
 // Created by M Lunkeit on 29.07.26.
 //
 
+#include <string.h>
+
+#include "basalt/mem.h"
 #include "crypto/kdf/pbkdf2.h"
 #include "crypto/mac/hmac.h"
-
-#include <string.h>
 
 basalt_err_t pbkdf2_hmac_sha512(
     uint8_t *dkey, const size_t len_dkey,
@@ -94,6 +95,8 @@ basalt_err_t pbkdf2_hmac_sha512(
 
         hmac_sha512(U, password, len_password, buf, len_salt + 4);
         memcpy(T + 64 * i, U, 64);
+
+        basalt_memzero(buf, len_salt + 4);
 
         for (size_t j = 1; j < iterations; j++) {
             hmac_sha512(U, password, len_password, U, 64);
