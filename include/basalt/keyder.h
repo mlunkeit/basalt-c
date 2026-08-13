@@ -2,8 +2,8 @@
 // Created by M Lunkeit on 28.07.26.
 //
 
-#ifndef BASALT_BIP39_H
-#define BASALT_BIP39_H
+#ifndef BASALT_KEYDER_H
+#define BASALT_KEYDER_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -94,13 +94,15 @@ basalt_err_t basalt_keyder_derive_seed(uint8_t seed[BASALT_BIP39_SEED_BYTES], co
  * @param[in]   curve       the curve to derive the key for
  * @param[out]  master      the generated root private key
  * @param[in]   seed        the 512 bit seed
+ * @param[in]   version     the version of the key (and all of its derived keys)
  *
  * @return      the error code, 0 otherwise
  */
 basalt_err_t basalt_keyder_derive_master(
     basalt_ec_curve_t curve,
     basalt_keyder_extended_private_key_t *master,
-    const uint8_t seed[BASALT_BIP39_SEED_BYTES]
+    const uint8_t seed[BASALT_BIP39_SEED_BYTES],
+    uint32_t version
 );
 
 /**
@@ -154,8 +156,15 @@ basalt_err_t basalt_keyder_derive_public(
     const uint32_t *path, size_t len_path
 );
 
+basalt_err_t basalt_keyder_derive_from_domain(
+    basalt_ec_curve_t curve,
+    basalt_keyder_extended_private_key_t *child,
+    const basalt_keyder_extended_private_key_t *master,
+    const char *domain
+);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif //BASALT_BIP39_H
+#endif //BASALT_KEYDER_H

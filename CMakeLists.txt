@@ -27,6 +27,7 @@ add_library(basalt STATIC
         src/utils/strutil.c
         src/basalt_keyder.c
         src/crypto/hash/ripemd160.c
+        src/basalt_serial.c
 )
 
 target_include_directories(basalt
@@ -56,7 +57,8 @@ add_executable(run_tests
         test/crypto/codec/base58.c
         test/utils/strutil.c
         test/crypto/kdf/bip32.c
-        test/crypto/hash/ripemd160.c)
+        test/crypto/hash/ripemd160.c
+        test/crypto/kdf/keyder.c)
 
 target_include_directories(run_tests
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src

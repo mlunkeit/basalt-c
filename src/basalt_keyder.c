@@ -34,7 +34,8 @@ basalt_err_t basalt_keyder_derive_seed(uint8_t seed[BASALT_BIP39_SEED_BYTES], co
 basalt_err_t basalt_keyder_derive_master(
     const basalt_ec_curve_t curve,
     basalt_keyder_extended_private_key_t *master,
-    const uint8_t seed[BASALT_BIP39_SEED_BYTES])
+    const uint8_t seed[BASALT_BIP39_SEED_BYTES],
+    const uint32_t version)
 {
 
     if (!master || !seed) {
@@ -53,6 +54,11 @@ basalt_err_t basalt_keyder_derive_master(
     if (err) {
         return err;
     }
+
+    master->version = version;
+    master->depth = 0;
+    master->parent_fingerprint = 0;
+    master->child_number = 0;
 
     bigint_to_bytes(master->key.d, master_tmp.k, 8);
     memcpy(master->c, master_tmp.c, 32 * sizeof(uint8_t));
@@ -183,6 +189,41 @@ basalt_err_t basalt_keyder_derive_public(
     bigint_to_bytes(child->key.x, child_tmp.K.x, 8);
     bigint_to_bytes(child->key.y, child_tmp.K.y, 8);
     memcpy(child->c, child_tmp.c, 32 * sizeof(uint8_t));
+
+    return BASALT_OK;
+}
+
+basalt_err_t basalt_keyder_derive_from_domain(
+    const basalt_ec_curve_t curve,
+    basalt_keyder_extended_private_key_t *child,
+    const basalt_keyder_extended_private_key_t *master,
+    const char *domain)
+{
+    if (!child || !master || !domain) {
+        return BASALT_ERR_NULL_POINTER;
+    }
+
+    const size_t len_domain = strlen(domain);
+    if (!len_domain) {
+        return BASALT_ERR_INVALID_PARAM;
+    }
+
+    uint8_t hash[32];
+    sha256(hash, (uint8_t*) domain, len_domain);
+
+    uint32_t path[9] = {0};
+    path[0] = 13 + (1 << 31);
+
+    for (size_t i = 0; i < len_domain; i++) {
+        path[i + 1] =
+            (hash[i * 4] << 24)
+            | (hash[i * 4 + 1] << 16)
+            | (hash[i * 4 + 2] << 8)
+            | (hash[i * 4 + 3])
+            | (1 << 31);
+    }
+
+    basalt_keyder_derive_private(curve, child, master, path, 9);
 
     return BASALT_OK;
 }

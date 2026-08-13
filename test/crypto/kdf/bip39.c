@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "basalt/keyder.h"
 #include "crypto/kdf/bip39.h"
 
 #include "unittest.h"
@@ -35,7 +36,7 @@ DEFINE_TEST(low_entropy_seed_generation)
     const char *passphrase = "TREZOR";
 
     uint8_t seed[64];
-    bip39_generate_seed(seed, mnemonic, passphrase);
+    ASSERT(basalt_keyder_derive_seed(seed, mnemonic, passphrase) == BASALT_OK);
 
     uint8_t expected[64];
     hex_to_bytes("2e8905819b8723fe2c1d161860e5ee1830318dbf49a83bd451cfb8440c28bd6fa457fe1296106559a3c80937a1c1069be3a3a5bd381ee6260e8d9739fce1f607", expected, 64);
