@@ -11,13 +11,13 @@
 extern "C" {
 #endif
 
-basalt_err_t basalt_serialize_raw_private(uint8_t out[78], const basalt_keyder_extended_private_key_t *private);
+basalt_err_t basalt_serialize_raw_private(uint8_t out[78], const basalt_keyder_extended_private_key_t *key);
 
-basalt_err_t basalt_serialize_raw_public(uint8_t out[78], const basalt_keyder_extended_public_key_t *public);
+basalt_err_t basalt_serialize_raw_public(basalt_ec_curve_t curve, uint8_t out[78], const basalt_keyder_extended_public_key_t *key);
 
-basalt_err_t basalt_serialize_b58_private(char *out, const basalt_keyder_extended_private_key_t *private);
+basalt_err_t basalt_serialize_b58_private(char *out, const basalt_keyder_extended_private_key_t *key);
 
-basalt_err_t basalt_serialize_b58_public(char *out, const basalt_keyder_extended_public_key_t *public);
+basalt_err_t basalt_serialize_b58_public(basalt_ec_curve_t curve, char *out, const basalt_keyder_extended_public_key_t *key);
 
 #ifdef __cplusplus
 }

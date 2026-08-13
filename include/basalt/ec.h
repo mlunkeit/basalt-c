@@ -133,6 +133,11 @@ basalt_err_t basalt_ec_decompress_public_key(
     const basalt_ec_compressed_public_key_t *compressed
 );
 
+basalt_err_t basalt_ec_calculate_public_key(
+    basalt_ec_curve_t curve,
+    basalt_ec_public_key_t *pubkey,
+    const basalt_ec_private_key_t *privkey);
+
 #ifdef __cplusplus
 }
 #endif

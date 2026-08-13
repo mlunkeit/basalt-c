@@ -2,6 +2,7 @@
 // Created by M Lunkeit on 10.08.26.
 //
 
+#include "basalt/mem.h"
 #include "basalt/ec.h"
 #include "basalt_ec.h"
 #include "math/bigint.h"
@@ -29,6 +30,7 @@ basalt_err_t basalt_ec_compress_public_key(
     }
 
     wcurve_point_t decompressed_buf;
+    decompressed_buf.infinity = false;
     bytes_to_bigint(decompressed_buf.x, decompressed->x, wcurve->len_p * 4);
     bytes_to_bigint(decompressed_buf.y, decompressed->y, wcurve->len_p * 4);
 
@@ -71,6 +73,46 @@ basalt_err_t basalt_ec_decompress_public_key(
     bigint_to_bytes(decompressed->y, decompressed_buf.y, wcurve->len_p);
 
     return BASALT_OK;
+}
+
+basalt_err_t basalt_ec_calculate_public_key(
+    const basalt_ec_curve_t curve,
+    basalt_ec_public_key_t *pubkey,
+    const basalt_ec_private_key_t *privkey)
+{
+    if (!pubkey || !privkey) {
+        return BASALT_ERR_NULL_POINTER;
+    }
+
+    const wcurve_spec_t *wcurve;
+    const basalt_err_t err = find_wcurve(&wcurve, curve);
+    if (err) {
+        return err;
+    }
+
+    wcurve_point_t buf;
+    uint32_t scalar[wcurve->len_n];
+    bytes_to_bigint(scalar, privkey->d, wcurve->len_n * 4);
+
+    if (bigint_cmp_raw(scalar, wcurve->len_n, wcurve->n, wcurve->len_n) >= 0) {
+        goto derivation_failed;
+    }
+
+    wcurve_point_scale(wcurve, &buf, &wcurve->g, scalar);
+
+    if (buf.infinity) {
+        goto derivation_failed;
+    }
+
+    bigint_to_bytes(pubkey->x, buf.x, wcurve->len_p);
+    bigint_to_bytes(pubkey->y, buf.y, wcurve->len_p);
+
+    basalt_memzero(scalar, wcurve->len_n * sizeof(uint32_t));
+    return BASALT_OK;
+
+derivation_failed:
+    basalt_memzero(scalar, wcurve->len_n * sizeof(uint32_t));
+    return BASALT_ERR_DERIVATION_FAILED;
 }
 
 basalt_err_t find_wcurve(const wcurve_spec_t **out_curve, const basalt_ec_curve_t ec) {
