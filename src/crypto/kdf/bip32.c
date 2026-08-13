@@ -71,13 +71,13 @@ basalt_err_t bip32_derive_private(
     // In case parse256(IL) ≥ n or k_i = 0, the resulting key is invalid, and one should
     // proceed with the next value for i. (Note: this has probability lower than 1 in 2^127.)
     if (bigint_cmp_raw(child->k, 8, wcurve->n, 8) >= 0) {
-        return bip32_derive_private(wcurve, child, parent, index + 1);
+        return bip32_derive_private(wcurve, child, &parent_buf, index + 1);
     }
 
     modular_add_raw(&modn_ctx, child->k, child->k, 8, parent_buf.k, 8);
 
     if (bigint_cmp_raw(child->k, 8, nullptr, 0) == 0) {
-        return bip32_derive_private(wcurve, child, parent, index + 1);
+        return bip32_derive_private(wcurve, child, &parent_buf, index + 1);
     }
 
     // The returned chain code c_i is I_R.

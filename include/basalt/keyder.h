@@ -19,14 +19,28 @@ extern "C" {
 #define BASALT_BIP39_ENTROPY_BYTES  16
 #define BASALT_BIP39_SEED_BYTES     64
 
+#define BASALT_MAINNET_PUBLIC       0x0488B21E
+#define BASALT_MAINNET_PRIVATE      0x0488ADE4
+
+#define BASALT_TESTNET_PUBLIC       0x043587CF
+#define BASALT_TESTNET_PRIVATE      0x04358394
+
 typedef struct {
-    basalt_ec_private_key_t key;
+    uint32_t version;
+    uint8_t depth;
+    uint32_t parent_fingerprint;
+    uint32_t child_number;
     uint8_t c[BASALT_BIP32_KEY_BYTES];
+    basalt_ec_private_key_t key;
 } basalt_keyder_extended_private_key_t;
 
 typedef struct {
-    basalt_ec_public_key_t key;
+    uint32_t version;
+    uint8_t depth;
+    uint32_t parent_fingerprint;
+    uint32_t child_number;
     uint8_t c[BASALT_BIP32_KEY_BYTES];
+    basalt_ec_public_key_t key;
 } basalt_keyder_extended_public_key_t;
 
 /**
