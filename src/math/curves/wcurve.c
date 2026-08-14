@@ -10,6 +10,33 @@
 #include "math/barrett.h"
 #include "math/curves/wcurve.h"
 
+bool wcurve_point_is_on_curve(const wcurve_spec_t *wcurve, const wcurve_point_t *point) {
+    if (point->infinity) {
+        return true;
+    }
+
+    const barrett_ctx bar_ctx = {.modulus = wcurve->p, .k = wcurve->len_p, .mu = wcurve->mu_p};
+    const modular_ctx mod_ctx = {.modulus = wcurve->p, .len_modulus = wcurve->len_p};
+
+    uint32_t y_squared[wcurve->len_p];
+    barrett_mul(&bar_ctx, y_squared, point->y, point->y);
+
+    uint32_t x_pow3[wcurve->len_p];
+    barrett_mul(&bar_ctx, x_pow3, point->x, point->x);
+    barrett_mul(&bar_ctx, x_pow3, x_pow3, point->x);
+
+    uint32_t ax[wcurve->len_p];
+    barrett_mul(&bar_ctx, ax, point->x, wcurve->a);
+
+    // sum <- x^3 + ax + b
+    uint32_t sum[wcurve->len_p];
+    modular_add_raw(&mod_ctx, sum, x_pow3, wcurve->len_p, ax, wcurve->len_p);
+    modular_add_raw(&mod_ctx, sum, sum, wcurve->len_p, wcurve->b, wcurve->len_p);
+
+    // check if y^2 == x^3 + ax + b
+    return bigint_cmp_raw(y_squared, wcurve->len_p, sum, wcurve->len_p) == 0;
+}
+
 void wcurve_point_add(
     const wcurve_spec_t *wcurve,
     wcurve_point_t *result,

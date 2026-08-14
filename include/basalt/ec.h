@@ -103,7 +103,7 @@ typedef enum {
  *
  * @return the error code, 0 otherwise
  */
-basalt_err_t basalt_ec_compress_public_key(
+basalt_err_t basalt_ec_compress_public(
     basalt_ec_curve_t curve,
     basalt_ec_compressed_public_key_t *compressed,
     const basalt_ec_public_key_t *decompressed
@@ -127,16 +127,64 @@ basalt_err_t basalt_ec_compress_public_key(
  *
  * @return the error code, 0 otherwise
  */
-basalt_err_t basalt_ec_decompress_public_key(
+basalt_err_t basalt_ec_decompress_public(
     basalt_ec_curve_t curve,
     basalt_ec_public_key_t *decompressed,
     const basalt_ec_compressed_public_key_t *compressed
 );
 
+/**
+ * @brief Calculates the corresponding public key to a given private key.
+ *
+ * This function uses point multiplication on the specified elliptic
+ * curve the calculate the matching public key. Note that
+ * k * G = P where k is the private key, G the generator point for the
+ * curve and P the public key.
+ *
+ * @param[in]   curve   the curve to calculate the public key on
+ * @param[out]  pubkey  the public key
+ * @param[in]   privkey the private key
+ *
+ * @return the error code, 0 otherwise
+ */
 basalt_err_t basalt_ec_calculate_public_key(
     basalt_ec_curve_t curve,
     basalt_ec_public_key_t *pubkey,
     const basalt_ec_private_key_t *privkey);
+
+/**
+ * @brief Checks if a public key is valid for a given elliptic curve.
+ *
+ * This function checks if the elliptic curve equation is satisfied for
+ * the given public key.
+ *
+ * @param[in] curve     the curve to run the verification on
+ * @param[in] pubkey    the public key
+ *
+ * @return  BASALT_ERR_INVALID_KEY if the verification fails, BASALT_OK otherwise.
+ *          can also return other unexpected error codes.
+ */
+basalt_err_t basalt_ec_verify_public(
+    basalt_ec_curve_t curve,
+    const basalt_ec_public_key_t *pubkey
+);
+
+/**
+ * @brief Checks if a private key is valid for a given elliptic curve.
+ *
+ * This function checks if a private key meets all criteria to be a
+ * private key on the given elliptic curve.
+ *
+ * @param[in] curve     the curve to run the verification on
+ * @param[in] privkey   the private key
+ *
+ * @return  BASALT_ERR_INVALID_KEY if the verification fails, BASALT_OK otherwise.
+ *          can also return other unexpected error codes.
+ */
+basalt_err_t basalt_ec_verify_private(
+    basalt_ec_curve_t curve,
+    const basalt_ec_private_key_t *privkey
+);
 
 #ifdef __cplusplus
 }

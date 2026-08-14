@@ -84,7 +84,7 @@ DEFINE_TEST(bip32_vector_1)
     basalt_keyder_derive_private(BASALT_CURVE_SECP256K1, &child, &master, path, 2);
 
     char base58[150];
-    basalt_serialize_b58_private(base58, &child);
+    basalt_serialize_b58_extended_private(base58, &child);
     ASSERT_STR_EQ(base58, "xprv9wSp6B7kry3Vj9m1zSnLvN3xH8RdsPP1Mh7fAaR7aRLcQMKTR2vidYEeEg2mUCTAwCd6vnxVrcjfy2kRgVsFawNzmjuHc2YmYRmagcEPdU9");
 
     basalt_keyder_extended_public_key_t childpub;
@@ -95,7 +95,7 @@ DEFINE_TEST(bip32_vector_1)
     memcpy(childpub.c, child.c, 32);
 
     ASSERT(basalt_ec_calculate_public_key(BASALT_CURVE_SECP256K1, &childpub.key, &child.key) == BASALT_OK);
-    basalt_serialize_b58_public(BASALT_CURVE_SECP256K1, base58, &childpub);
+    basalt_serialize_b58_extended_public(BASALT_CURVE_SECP256K1, base58, &childpub);
 
     ASSERT_STR_EQ(base58, "xpub6ASAVgeehLbnwdqV6UKMHVzgqAG8Gr6riv3Fxxpj8ksbH9ebxaEyBLZ85ySDhKiLDBrQSARLq1uNRts8RuJiHjaDMBU4Zn9h8LZNnBC5y4a");
 END_TEST

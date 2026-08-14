@@ -10,7 +10,7 @@
 #include "math/curves/secp256r1.h"
 #include "math/curves/wcurve_point.h"
 
-basalt_err_t basalt_ec_compress_public_key(
+basalt_err_t basalt_ec_compress_public(
     const basalt_ec_curve_t curve,
     basalt_ec_compressed_public_key_t *compressed,
     const basalt_ec_public_key_t *decompressed
@@ -37,7 +37,7 @@ basalt_err_t basalt_ec_compress_public_key(
     return wcurve_point_compress(wcurve, compressed->data, &decompressed_buf);
 }
 
-basalt_err_t basalt_ec_decompress_public_key(
+basalt_err_t basalt_ec_decompress_public(
     const basalt_ec_curve_t curve,
     basalt_ec_public_key_t *decompressed,
     const basalt_ec_compressed_public_key_t *compressed)
@@ -113,6 +113,53 @@ basalt_err_t basalt_ec_calculate_public_key(
 derivation_failed:
     basalt_memzero(scalar, wcurve->len_n * sizeof(uint32_t));
     return BASALT_ERR_DERIVATION_FAILED;
+}
+
+basalt_err_t basalt_ec_verify_public(const basalt_ec_curve_t curve, const basalt_ec_public_key_t *pubkey)
+{
+    if (!pubkey) {
+        return BASALT_ERR_NULL_POINTER;
+    }
+
+    const wcurve_spec_t *wcurve;
+
+    const basalt_err_t err = find_wcurve(&wcurve, curve);
+    if (err) {
+        return err;
+    }
+
+    wcurve_point_t point;
+    bytes_to_bigint(point.x, pubkey->x, wcurve->len_p);
+    bytes_to_bigint(point.y, pubkey->y, wcurve->len_p);
+    point.infinity = false;
+
+    return wcurve_point_is_on_curve(wcurve, &point) ? BASALT_OK : BASALT_ERR_INVALID_KEY;
+}
+
+basalt_err_t basalt_ec_verify_private(const basalt_ec_curve_t curve, const basalt_ec_private_key_t *privkey)
+{
+    if (!privkey) {
+        return BASALT_ERR_NULL_POINTER;
+    }
+
+    const wcurve_spec_t *wcurve;
+    const basalt_err_t err = find_wcurve(&wcurve, curve);
+    if (err) {
+        return err;
+    }
+
+    uint32_t scalar[wcurve->len_n];
+    bytes_to_bigint(scalar, privkey->d, wcurve->len_n * 4);
+
+    // if 0 < scalar < n then BASALT_OK otherwise BASALT_ERR_INVALID_KEY
+    const basalt_err_t status = ((bigint_cmp_raw(scalar, wcurve->len_n, wcurve->n, wcurve->len_n) < 0)
+        && (bigint_cmp_raw(scalar, wcurve->len_n, nullptr, 0) > 0))
+    ? BASALT_OK : BASALT_ERR_INVALID_KEY;
+
+    // cleanup
+    basalt_memzero(scalar, wcurve->len_n * sizeof(uint32_t));
+
+    return status;
 }
 
 basalt_err_t find_wcurve(const wcurve_spec_t **out_curve, const basalt_ec_curve_t ec) {

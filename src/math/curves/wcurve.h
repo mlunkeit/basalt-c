@@ -45,9 +45,8 @@ typedef struct {
     const uint32_t *mu_n;
 } wcurve_spec_t;
 
-bool wcurve_point_eq(
-    const wcurve_point_t *a,
-    const wcurve_point_t *b);
+// checks if the equation y^2 = ax^3 + bx +c is satisfied
+bool wcurve_point_is_on_curve(const wcurve_spec_t *wcurve, const wcurve_point_t *point);
 
 void wcurve_point_add(
     const wcurve_spec_t *wcurve,
